@@ -1,0 +1,6 @@
+# Shhh
+.env*
+!.env.sample
+
+# Project files
+node_modules
