@@ -4,3 +4,5 @@
 
 # Project files
 node_modules
+.git
+.eslintcache

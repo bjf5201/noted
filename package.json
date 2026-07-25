@@ -8,12 +8,12 @@
     "prepare": "husky",
     "commitlint": "commitlint --edit",
     "dev": "tsx watch src/index.ts",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint . --cache",
-    "lint:fix": "eslint . --fix --cache",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "check": "pnpm run typecheck && pnpm run lint && pnpm run format:check"
+    "typecheck": "pnpm exec tsc --noEmit",
+    "lint": "eslint . --cache --no-error-on-unmatched-pattern",
+    "lint:fix": "eslint . --fix --cache --no-warn-ignored --max-warnings 0 --no-error-on-unmatched-pattern",
+    "format": "prettier \"**/*\" --check --ignore-unknown --cache",
+    "format:fix": "prettier \"**/*\" --write --ignore-unknown --cache",
+    "check": "pnpm run typecheck && pnpm run lint && pnpm run format"
   },
   "keywords": [],
   "author": "Bethany Fannin <contact@bethanyfannin.com> (https://www.bethanyfannin.com)",
@@ -40,7 +40,7 @@
     "lint-staged": "^17.2.0",
     "prettier": "^3.9.6",
     "tsx": "^4.23.1",
-    "typescript": "npm:@typescript/typescript6@^6.0.2",
+    "typescript": "6.0.3",
     "typescript-eslint": "^8.65.0"
   }
 }

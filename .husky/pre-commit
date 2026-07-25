@@ -1,1 +1,1 @@
-echo "Commit"
+pnpm exec lint-staged
