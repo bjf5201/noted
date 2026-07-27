@@ -1,8 +1,13 @@
 export default {
-  'src/**/*.{ts,tsx}': ['pnpm typecheck'],
+  // run typecheck project-wide
+  'src/**/*.{ts,tsx}': [() => 'pnpm typecheck'],
+
+  // run formatting and linting on staged files only
   '**/*.{ts,tsx,js,jsx}': (filenames) => [
     `pnpm format:fix ${filenames.join(' ')}`,
     `pnpm lint:fix ${filenames.join(' ')}`,
   ],
-  '*/**.{json,css,html,md,mdx}': ['pnpm format:fix'],
+
+  // format non-typescript files
+  '**/*.{json,css,html,md,mdx}': ['pnpm format:fix'],
 };
