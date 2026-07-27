@@ -5,4 +5,5 @@
 # Project files
 node_modules
 .git
-.eslintcache
+*.eslintcache
+.pnpm-store
