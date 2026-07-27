@@ -1,8 +1,9 @@
 import Database from 'better-sqlite3';
 
-const db = new Database('data/notes.db');
+export function createDatabase(filename: string): Database.Database {
+  const db = new Database(filename);
 
-db.exec(`
+  db.exec(`
   CREATE TABLE IF NOT EXISTS notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -10,4 +11,5 @@ db.exec(`
   );
 `);
 
-export default db;
+  return db;
+}
