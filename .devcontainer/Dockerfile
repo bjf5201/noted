@@ -1,8 +1,7 @@
-FROM mcr.microsoft.com/devcontainers/typescript-node:24
+FROM mcr.microsoft.com/devcontainers/typescript-node:24-bookworm
 # Enable Corepack so we can use the version of pnpm specified
 # by the project.
-RUN corepack enable && \
-	  corepack prepare pnpm@latest-11 --activate
+RUN corepack enable
 
 # Install packages commonly required for native Node modules.
 RUN apt-get update && \
@@ -17,8 +16,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Create a directory for the pnpm store.
-ENV PNPM_HOME="/pnpm"
+ENV PNPM_HOME="/home/node/.local/share/pnpm"
 ENV PATH=$PNPM_HOME:$PATH
 
-RUN mkdir -p /pnpm && \
-    chown node:node /pnpm
+RUN mkdir -p "$PNPM_HOME" && \
+    chown node:node "$PNPM_HOME"
