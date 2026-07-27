@@ -6,10 +6,10 @@
 
     "strict": true,
 
-		"rewriteRelativeImportExtensions": false,
+    "rewriteRelativeImportExtensions": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
-		"rootDir": ".",
+    "rootDir": ".",
     "outDir": "dist"
   },
   "include": ["src", "crash.ts"]

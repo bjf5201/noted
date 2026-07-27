@@ -38,7 +38,7 @@ export default defineConfig([
     },
     rules: {
       // General
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-console': 'off', //['warn', { allow: ['warn', 'error'] }],
       'no-unused-vars': 'off',
 
       // Import sorting
