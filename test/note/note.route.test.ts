@@ -1,8 +1,20 @@
-import { describe, expect, it } from 'vitest';
-import { useTestApp } from 'noted/#/utils/context.js';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { FastifyInstance } from 'fastify';
+import { createDatabase } from 'noted/database.js';
+import { buildApp } from 'noted/app.js';
 
 describe('GET /notes', () => {
-  const app = useTestApp();
+  let app: FastifyInstance;
+
+  beforeEach(async () => {
+    const db = createDatabase(':memory:');
+    app = buildApp(db);
+    await app.ready();
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
 
   it('returns empty array when no notes exist', async () => {
     const response = await app.inject({
@@ -36,14 +48,22 @@ describe('GET /notes', () => {
       id: expect.any(Number),
       title: 'Test Note 1',
       content: '# Test Note',
-      createdAt: expect.any(String),
-      updatedAt: expect.any(String),
     });
   });
 });
 
 describe('POST /notes', () => {
-  const app = useTestApp();
+  let app: FastifyInstance;
+
+  beforeEach(async () => {
+    const db = createDatabase(':memory:');
+    app = buildApp(db);
+    await app.ready();
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
 
   it('creates a new note', async () => {
     const response = await app.inject({

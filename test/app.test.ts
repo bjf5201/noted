@@ -1,8 +1,20 @@
-import { describe, expect, it } from 'vitest';
-import { useTestApp } from 'noted/#/utils/context.js';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { FastifyInstance } from 'fastify';
+import { createDatabase } from 'noted/database.js';
+import { buildApp } from 'noted/app.js';
 
 describe('GET /', () => {
-  const app = useTestApp();
+  let app: FastifyInstance;
+
+  beforeEach(async () => {
+    const db = createDatabase(':memory:');
+    app = buildApp(db);
+    await app.ready();
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
 
   it('returns database status', async () => {
     const response = await app.inject({
