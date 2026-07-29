@@ -1,18 +1,8 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { buildApp } from 'noted/app.js';
-import { createDatabase } from 'noted/database.js';
+import { describe, expect, it } from 'vitest';
+import { useTestApp } from 'noted/#/utils/context.js';
 
 describe('GET /', () => {
-  const db = createDatabase(':memory:');
-  const app = buildApp(db);
-
-  beforeAll(async () => {
-    await app.ready();
-  });
-
-  afterAll(async () => {
-    await app.close();
-  });
+  const app = useTestApp();
 
   it('returns database status', async () => {
     const response = await app.inject({
