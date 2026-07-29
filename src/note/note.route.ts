@@ -3,7 +3,8 @@ import type { FastifyPluginAsync } from 'fastify';
 
 export default function notesRoutes(db: Database.Database): FastifyPluginAsync {
   return async function (app) {
-    app.post('/', async (request, reply) => {
+    // POST /notes endpoint
+    app.post('/', async (request, response) => {
       const body = request.body as {
         title: string;
         content: string;
@@ -17,11 +18,14 @@ export default function notesRoutes(db: Database.Database): FastifyPluginAsync {
         .prepare(`SELECT id, title, content FROM notes WHERE id = ?`)
         .get(result.lastInsertRowid);
 
-      return reply.code(201).send(note);
+      return response.code(201).send(note);
     });
 
-    app.get('/', async (request, reply) => {
-      return reply.code(200).send([]);
+    // GET /notes endpoint
+    app.get('/', async (request, response) => {
+      const result = db.prepare(`SELECT id, title, content FROM notes`).all();
+
+      return response.code(200).send(result);
     });
   };
 }
