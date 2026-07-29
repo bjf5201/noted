@@ -13,6 +13,33 @@ describe('GET /notes', () => {
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual([]);
   });
+
+  it('returns notes that have been created', async () => {
+    await app.inject({
+      method: 'POST',
+      url: '/notes',
+      payload: {
+        title: 'Test Note 1',
+        content: '# Test Note',
+      },
+    });
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/notes',
+    });
+
+    const notes = response.json();
+
+    expect(notes).toHaveLength(1);
+    expect(notes[0]).toEqual({
+      id: expect.any(Number),
+      title: 'Test Note 1',
+      content: '# Test Note',
+      createdAt: expect.any(String),
+      updatedAt: expect.any(String),
+    });
+  });
 });
 
 describe('POST /notes', () => {
