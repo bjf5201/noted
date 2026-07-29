@@ -1,18 +1,8 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { buildApp } from 'noted/app.js';
-import { createDatabase } from 'noted/database.js';
+import { describe, expect, it } from 'vitest';
+import { useTestApp } from 'noted/#/utils/context.js';
 
 describe('GET /notes', () => {
-  const db = createDatabase(':memory:');
-  const app = buildApp(db);
-
-  beforeAll(async () => {
-    await app.ready();
-  });
-
-  afterAll(async () => {
-    await app.close();
-  });
+  const app = useTestApp();
 
   it('returns empty array when no notes exist', async () => {
     const response = await app.inject({
@@ -26,16 +16,7 @@ describe('GET /notes', () => {
 });
 
 describe('POST /notes', () => {
-  const db = createDatabase(':memory:');
-  const app = buildApp(db);
-
-  beforeAll(async () => {
-    await app.ready();
-  });
-
-  afterAll(async () => {
-    await app.close();
-  });
+  const app = useTestApp();
 
   it('creates a new note', async () => {
     const response = await app.inject({

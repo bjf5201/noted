@@ -1,11 +1,18 @@
+import { afterAll, beforeAll } from 'vitest';
 import { buildApp } from 'noted/app.js';
 import { createDatabase } from 'noted/database.js';
 
-export async function createTestContext() {
+export function useTestApp() {
   const db = createDatabase(':memory:');
   const app = buildApp(db);
 
-  await app.ready();
+  beforeAll(async () => {
+    await app.ready();
+  });
 
-  return { app };
+  afterAll(async () => {
+    await app.close();
+  });
+
+  return app;
 }
