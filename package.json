@@ -1,9 +1,35 @@
 {
   "name": "noted",
-  "version": "0.0.1",
+  "author": "Bethany Fannin <contact@bethanyfannin.com> (https://www.bethanyfannin.com)",
   "type": "module",
+  "version": "0.0.1",
+  "license": "MIT",
   "description": "",
-  "main": "index.js",
+  "keywords": [
+    "notes",
+    "markdown",
+    "typescript",
+    "infrastructure-as-code",
+    "iac",
+    "terraform",
+    "fastify"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+github.com:bjf5201/noted.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bjf5201/noted/issues"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./*": "./src/*",
+    "./test/*": "./test/*"
+  },
+  "packageManager": "pnpm@11.17.0+sha512.cca3cea332ad254bb84145f966d19f4879615210346fc92c79a047f23a0d7b3cca3c3792f0076ba1f1831d277efbcf0a9119b31a9a60eca7fb3d6231f331ef72",
+  "engines": {
+    "node": "24.18.0"
+  },
   "scripts": {
     "prepare": "husky",
     "commitlint": "commitlint --edit",
@@ -18,17 +44,12 @@
     "test:watch": "vitest",
     "test": "vitest run"
   },
-  "keywords": [],
-  "author": "Bethany Fannin <contact@bethanyfannin.com> (https://www.bethanyfannin.com)",
-  "license": "MIT",
-  "engines": {
-    "node": "24.18.0"
-  },
-  "packageManager": "pnpm@11.17.0+sha512.cca3cea332ad254bb84145f966d19f4879615210346fc92c79a047f23a0d7b3cca3c3792f0076ba1f1831d277efbcf0a9119b31a9a60eca7fb3d6231f331ef72",
   "dependencies": {
+    "@fastify/type-provider-typebox": "^6.1.0",
     "@types/better-sqlite3": "^7.6.13",
     "better-sqlite3": "^13.0.1",
-    "fastify": "^5.10.0"
+    "fastify": "^5.10.0",
+    "typebox": "^1.3.8"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",
