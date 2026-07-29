@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { buildApp } from '../src/app.js';
-import { createDatabase } from '../src/database.js';
+import { buildApp } from 'noted/app.js';
+import { createDatabase } from 'noted/database.js';
 
 describe('GET /', () => {
   const db = createDatabase(':memory:');

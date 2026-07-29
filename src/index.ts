@@ -1,5 +1,5 @@
-import { buildApp } from './app.js';
-import { createDatabase } from './database.js';
+import { buildApp } from 'noted/app.js';
+import { createDatabase } from 'noted/database.js';
 
 const db = createDatabase('data/notes.db');
 

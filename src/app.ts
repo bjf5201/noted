@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3';
 import Fastify from 'fastify';
-import notesRoutes from './routes/notes.js';
+import notesRoutes from 'noted/note/note.route.js';
 
 export function buildApp(db: Database.Database) {
   const app = Fastify({
