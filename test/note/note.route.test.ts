@@ -50,6 +50,38 @@ describe('GET /notes', () => {
       content: '# Test Note',
     });
   });
+
+  it('returns newest notes first', async () => {
+    await app.inject({
+      method: 'POST',
+      url: '/notes',
+      payload: {
+        title: 'First note',
+        content: 'Created first.',
+      },
+    });
+
+    await app.inject({
+      method: 'POST',
+      url: '/notes',
+      payload: {
+        title: 'Second Note',
+        content: 'Created second.',
+      },
+    });
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/notes',
+    });
+
+    const notes = response.json();
+
+    expect(notes).toHaveLength(2);
+
+    expect(notes[0].title).toBe('Second Note');
+    expect(notes[1].title).toBe('First note');
+  });
 });
 
 describe('POST /notes', () => {

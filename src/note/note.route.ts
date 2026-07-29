@@ -23,7 +23,7 @@ export default function notesRoutes(db: Database.Database): FastifyPluginAsync {
 
     // GET /notes endpoint
     app.get('/', async (request, response) => {
-      const result = db.prepare(`SELECT id, title, content FROM notes`).all();
+      const result = db.prepare(`SELECT id, title, content FROM notes ORDER BY id DESC`).all();
 
       return response.code(200).send(result);
     });
