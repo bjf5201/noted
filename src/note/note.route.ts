@@ -20,7 +20,7 @@ export default function notesRoutes(db: Database.Database): FastifyPluginAsync {
       return reply.code(201).send(note);
     });
 
-    app.get('/notes', async (request, reply) => {
+    app.get('/', async (request, reply) => {
       return reply.code(200).send([]);
     });
   };
