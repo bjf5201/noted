@@ -5,7 +5,7 @@ export function createNotesRepository(db: Database.Database) {
     /**
      * @description Returns list of all existing notes with the newest notes at the beginning
      */
-    list() {
+    listAll() {
       return db
         .prepare(
           `SELECT id, title, content

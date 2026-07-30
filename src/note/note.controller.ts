@@ -14,7 +14,7 @@ export function createNotesController(repo: TNoteRepository) {
       return response.code(201).send(note);
     },
     async getAll(request: FastifyRequest, response: FastifyReply) {
-      const notes = repo.list();
+      const notes = repo.listAll();
 
       return response.code(200).send(notes);
     },
