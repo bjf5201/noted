@@ -3,7 +3,7 @@ import { type TNoteRepository } from 'noted/note/note.repository.js';
 
 export function createNotesController(repo: TNoteRepository) {
   return {
-    async createNote(request: FastifyRequest, response: FastifyReply) {
+    async create(request: FastifyRequest, response: FastifyReply) {
       const body = request.body as unknown as {
         title: string;
         content: string;
@@ -13,7 +13,7 @@ export function createNotesController(repo: TNoteRepository) {
 
       return response.code(201).send(note);
     },
-    async getNote(request: FastifyRequest, response: FastifyReply) {
+    async getAll(request: FastifyRequest, response: FastifyReply) {
       const notes = repo.list();
 
       return response.code(200).send(notes);
