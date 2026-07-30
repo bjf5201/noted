@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 
-export function createNoteRepository(db: Database.Database) {
+export function createNotesRepository(db: Database.Database) {
   return {
     /**
      * @description Returns list of all existing notes with the newest notes at the beginning
@@ -8,11 +8,9 @@ export function createNoteRepository(db: Database.Database) {
     list() {
       return db
         .prepare(
-          `
-                    SELECT id, title, content
-                    FROM notes
-                    ORDER BY id DESC
-                `
+          `SELECT id, title, content
+            FROM notes
+            ORDER BY id DESC`
         )
         .all();
     },
@@ -32,4 +30,4 @@ export function createNoteRepository(db: Database.Database) {
   };
 }
 
-export type TNoteRepository = ReturnType<typeof createNoteRepository>;
+export type TNoteRepository = ReturnType<typeof createNotesRepository>;

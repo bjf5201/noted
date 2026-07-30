@@ -1,16 +1,16 @@
 import type Database from 'better-sqlite3';
 import Fastify from 'fastify';
 import notesRoutes from 'noted/note/note.route.js';
-import { createNoteRepository } from './note/note.repository.js';
+import { createNotesRepository } from './note/note.repository.js';
 
 export function buildApp(db: Database.Database) {
   const app = Fastify({
     logger: true,
   });
 
-  const noteRepository = createNoteRepository(db);
+  const notesRepository = createNotesRepository(db);
 
-  app.register(notesRoutes(noteRepository), {
+  app.register(notesRoutes(notesRepository), {
     prefix: '/notes',
   });
 
