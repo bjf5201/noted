@@ -1,7 +1,7 @@
-import type Database from 'better-sqlite3';
 import type { FastifyPluginAsync } from 'fastify';
+import type { TNoteRepository } from 'noted/note/note.repository.js';
 
-export default function notesRoutes(db: Database.Database): FastifyPluginAsync {
+export default function notesRoutes(repo: TNoteRepository): FastifyPluginAsync {
   return async function (app) {
     // POST /notes endpoint
     app.post('/', async (request, response) => {
@@ -10,22 +10,16 @@ export default function notesRoutes(db: Database.Database): FastifyPluginAsync {
         content: string;
       };
 
-      const result = db
-        .prepare(`INSERT INTO notes (title, content) VALUES (?, ?)`)
-        .run(body.title, body.content);
-
-      const note = db
-        .prepare(`SELECT id, title, content FROM notes WHERE id = ?`)
-        .get(result.lastInsertRowid);
+      const note = repo.create(body.title, body.content);
 
       return response.code(201).send(note);
     });
 
     // GET /notes endpoint
     app.get('/', async (request, response) => {
-      const result = db.prepare(`SELECT id, title, content FROM notes ORDER BY id DESC`).all();
+      const notes = repo.list();
 
-      return response.code(200).send(result);
+      return response.code(200).send(notes);
     });
   };
 }
