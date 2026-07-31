@@ -1,4 +1,4 @@
-import { Type } from 'typebox';
+import { Static, Type } from 'typebox';
 
 // Building blocks
 const noteId = Type.Integer();
@@ -16,21 +16,29 @@ export const NoteSchema = Type.Object({
   content: noteContent,
 });
 
-export const NoteSummarySchema = Type.Object({
-  id: noteId,
-  title: noteTitle,
-});
-
 export const CreateNoteBodySchema = Type.Object({
   title: noteTitle,
   content: noteContent,
 });
 
+export const GetNoteByIdParamsSchema = Type.Object({
+  noteId: noteId,
+});
+
 // GET /notes endpoint
 export const listNotesRouteSchema = {
-  summary: 'List notes (summary version)',
+  summary: 'List notes',
   response: {
     200: Type.Array(NoteSchema),
+  },
+};
+
+// GET /nodes/:noteId endpoint
+export const listNoteByIdRouteSchema = {
+  summary: 'List single note by id',
+  params: GetNoteByIdParamsSchema,
+  response: {
+    200: NoteSchema,
   },
 };
 
@@ -42,3 +50,5 @@ export const createNoteRouteSchema = {
     201: NoteSchema,
   },
 };
+
+export type TGetNoteByIdParams = Static<typeof GetNoteByIdParamsSchema>;

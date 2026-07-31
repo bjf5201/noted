@@ -16,6 +16,19 @@ export function createNotesRepository(db: Database.Database) {
     },
 
     /**
+     * @description Gets a note by its id
+     */
+    listById(id: number) {
+      return db
+        .prepare(
+          `SELECT id, title, content
+          FROM notes
+          WHERE id = ?`
+        )
+        .get(id);
+    },
+
+    /**
      * @description Creates a single note
      */
     create(title: string, content: string) {
