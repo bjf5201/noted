@@ -8,7 +8,7 @@ interface TGetNoteByIdParams {
 export function createNotesController(repo: TNoteRepository) {
   return {
     async create(request: FastifyRequest, response: FastifyReply) {
-      const body = request.body as unknown as {
+      const body = request.body as {
         title: string;
         content: string;
       };
