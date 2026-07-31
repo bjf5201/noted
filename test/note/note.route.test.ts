@@ -84,6 +84,64 @@ describe('GET /notes', () => {
   });
 });
 
+describe('GET /notes/:nodeId', () => {
+  let app: FastifyInstance;
+
+  beforeEach(async () => {
+    const db = createDatabase(':memory:');
+    app = buildApp(db);
+    await app.ready();
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
+
+  it('returns the note requested by id', async () => {
+    const notetoFind = await app.inject({
+      method: 'POST',
+      url: '/notes',
+      payload: {
+        title: 'First note',
+        content: '# First Note Content',
+      },
+    });
+
+    await app.inject({
+      method: 'POST',
+      url: '/notes',
+      payload: {
+        title: 'Second note',
+        content: '# Second \n ## Note Content',
+      },
+    });
+
+    const created = notetoFind.json();
+
+    const response = await app.inject({
+      method: 'GET',
+      url: `/notes/${created.id}`,
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    expect(response.json()).toEqual({
+      id: created.id,
+      title: 'First note',
+      content: '# First Note Content',
+    });
+  });
+
+  it('returns 404 when the note does not exist', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/notes/999',
+    });
+
+    expect(response.statusCode).toBe(404);
+  });
+});
+
 describe('POST /notes', () => {
   let app: FastifyInstance;
 
