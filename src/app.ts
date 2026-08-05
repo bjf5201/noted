@@ -5,6 +5,8 @@ import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 import notesRoutes from 'noted/note/note.route.js';
 import { createNotesRepository } from './note/note.repository.js';
 
+import { userRoutes } from 'noted/user/user.route.js';
+
 export function buildApp(db: Database.Database) {
   const app = Fastify().withTypeProvider<TypeBoxTypeProvider>();
 
@@ -12,6 +14,10 @@ export function buildApp(db: Database.Database) {
 
   app.register(notesRoutes(notesRepository), {
     prefix: '/notes',
+  });
+
+  app.register(userRoutes, {
+    prefix: '/users',
   });
 
   app.get('/', async () => {
