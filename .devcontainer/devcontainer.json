@@ -6,14 +6,33 @@
   },
   "remoteUser": "node",
   "forwardPorts": [3000],
-  "postCreateCommand": "pnpm install",
+  "postCreateCommand": "pnpm install --frozen-lockfile",
+  "remoteEnv": {
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
+  },
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-vscode.vscode-typescript-next",
+        "bierner.markdown-preview-github-styles",
+        "davidanson.vscode-markdownlint",
+        "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint"
-      ]
+        "github.vscode-github-actions",
+        "redhat.vscode-yaml",
+        "yzhang.markdown-all-in-one"
+      ],
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.tabSize": 2,
+        "editor.formatOnSave": true,
+        "markdown.extension.list.indentationSize": "adaptive",
+        "markdown.extension.italic.indicator": "_",
+        "markdown.extension.orderedList.marker": "one",
+        "markdown.extension.tableFormatter.normalizeIndentation": true
+      }
     }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   }
 }
