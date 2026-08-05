@@ -21,3 +21,6 @@ ENV PATH=$PNPM_HOME:$PATH
 
 RUN mkdir -p "$PNPM_HOME" && \
     chown node:node "$PNPM_HOME"
+
+# Install GitHub Copilot CLI
+RUN curl -fsSL https://gh.io/copilot-install | bash
