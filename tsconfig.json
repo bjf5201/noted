@@ -5,11 +5,10 @@
     "moduleResolution": "NodeNext",
 
     "strict": true,
-
+    "declaration": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "noEmit": true,
-    "rootDir": "."
+    "noEmit": true
   },
-  "include": ["src", "test"]
+  "include": ["src/**/*", "test/**/*"]
 }

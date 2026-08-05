@@ -3,7 +3,6 @@
   "compilerOptions": {
     "noEmit": false,
     "outDir": "dist",
-    "declaration": false,
     "sourceMap": true
   },
   "exclude": ["test", "**/*.test.ts", "**/*.spec.ts"]
