@@ -6,11 +6,10 @@
 
     "strict": true,
 
-    "rewriteRelativeImportExtensions": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "rootDir": ".",
-    "outDir": "dist"
+    "noEmit": true,
+    "rootDir": "."
   },
   "include": ["src", "test"]
 }

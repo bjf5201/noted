@@ -36,13 +36,14 @@
     "dev": "pnpm exec tsx watch src/index.ts",
     "start": "pnpm exec tsx src/index.ts",
     "typecheck": "pnpm exec tsc --noEmit",
-    "lint": "eslint . --cache --no-error-on-unmatched-pattern",
-    "lint:fix": "eslint . --fix --cache --no-warn-ignored --max-warnings 0 --no-error-on-unmatched-pattern",
-    "format": "prettier \"**/*\" --check --ignore-unknown --cache",
-    "format:fix": "prettier \"**/*\" --write --ignore-unknown --cache",
+    "lint:check": "eslint . --cache --no-error-on-unmatched-pattern",
+    "lint": "eslint . --fix --cache --no-warn-ignored --max-warnings 0 --no-error-on-unmatched-pattern",
+    "format:check": "prettier \"**/*\" --check --ignore-unknown --cache",
+    "format": "prettier \"**/*\" --write --ignore-unknown --cache",
     "check": "pnpm run typecheck && pnpm run lint && pnpm run format",
     "test:watch": "vitest",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
     "@fastify/type-provider-typebox": "^6.1.0",
