@@ -40,4 +40,31 @@ describe('User routes', () => {
       username: 'bob',
     });
   });
+
+  it('creates a unique id for each user', async () => {
+    const firstResponse = await app.inject({
+      method: 'POST',
+      url: '/users/create',
+      payload: {
+        username: 'alice',
+        password: 'secret',
+      },
+    });
+
+    const secondResponse = await app.inject({
+      method: 'POST',
+      url: '/users/create',
+      payload: {
+        username: 'bob',
+        password: 'hush',
+      },
+    });
+
+    const firstUser = firstResponse.json();
+    const secondUser = secondResponse.json();
+
+    expect(firstUser.id).toEqual(expect.any(Number));
+    expect(secondUser.id).toEqual(expect.any(Number));
+    expect(secondUser.id).not.toBe(firstUser.id);
+  });
 });
