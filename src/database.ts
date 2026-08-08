@@ -9,6 +9,12 @@ export function createDatabase(filename: string): Database.Database {
     title TEXT NOT NULL,
     content TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS users (
+    userId INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    password TEXT NOT NULL
+  );
 `);
 
   return db;

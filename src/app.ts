@@ -16,7 +16,7 @@ export function buildApp(db: Database.Database) {
     prefix: '/notes',
   });
 
-  app.register(userRoutes, {
+  app.register(userRoutes(db), {
     prefix: '/users',
   });
 
