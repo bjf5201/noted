@@ -5,7 +5,7 @@ export function createDatabase(filename: string): Database.Database {
 
   db.exec(`
   CREATE TABLE IF NOT EXISTS notes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    noteId INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     content TEXT NOT NULL
   );

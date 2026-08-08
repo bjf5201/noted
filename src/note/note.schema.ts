@@ -1,28 +1,28 @@
 import { Static, Type } from 'typebox';
 
 // Building blocks
-const noteId = Type.Integer();
-const noteTitle = Type.String({
+const noteIdSchema = Type.Integer();
+const noteTitleSchema = Type.String({
   minLength: 1,
   maxLength: 200,
 });
-const noteContent = Type.String({
+const noteContentSchema = Type.String({
   minLength: 1,
 });
 
 export const NoteSchema = Type.Object({
-  id: noteId,
-  title: noteTitle,
-  content: noteContent,
+  noteId: noteIdSchema,
+  title: noteTitleSchema,
+  content: noteContentSchema,
 });
 
 export const CreateNoteBodySchema = Type.Object({
-  title: noteTitle,
-  content: noteContent,
+  title: noteTitleSchema,
+  content: noteContentSchema,
 });
 
 export const GetNoteByIdParamsSchema = Type.Object({
-  noteId: noteId,
+  noteId: noteIdSchema,
 });
 
 // GET /notes endpoint
@@ -33,7 +33,7 @@ export const listNotesRouteSchema = {
   },
 };
 
-// GET /nodes/:noteId endpoint
+// GET /notes/:noteId endpoint
 export const listNoteByIdRouteSchema = {
   summary: 'List single note by id',
   params: GetNoteByIdParamsSchema,

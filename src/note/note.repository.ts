@@ -8,9 +8,9 @@ export function createNotesRepository(db: Database.Database) {
     listAll() {
       return db
         .prepare(
-          `SELECT id, title, content
+          `SELECT noteId, title, content
             FROM notes
-            ORDER BY id DESC`
+            ORDER BY noteId DESC`
         )
         .all();
     },
@@ -18,14 +18,14 @@ export function createNotesRepository(db: Database.Database) {
     /**
      * @description Gets a note by its id
      */
-    listById(id: number) {
+    listById(noteId: number) {
       return db
         .prepare(
-          `SELECT id, title, content
+          `SELECT noteId, title, content
           FROM notes
-          WHERE id = ?`
+          WHERE noteId = ?`
         )
-        .get(id);
+        .get(noteId);
     },
 
     /**
@@ -37,7 +37,7 @@ export function createNotesRepository(db: Database.Database) {
         .run(title, content);
 
       return db
-        .prepare(`SELECT id, title, content FROM notes WHERE id = ?`)
+        .prepare(`SELECT noteId, title, content FROM notes WHERE noteId = ?`)
         .get(result.lastInsertRowid);
     },
   };
