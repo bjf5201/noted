@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { createDatabase } from 'noted/database.js';
 import { buildApp } from 'noted/app.js';
 
-describe('User routes', () => {
+describe('POST /users/create', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {
