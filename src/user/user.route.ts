@@ -1,24 +1,19 @@
-import Database from 'better-sqlite3';
 import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import { type TUsersRepository } from 'noted/user/user.repository.js';
 
 interface TCreateUserBody {
   username: string;
   password: string;
 }
 
-export function userRoutes(db: Database.Database): FastifyPluginAsync {
+export function userRoutes(repo: TUsersRepository): FastifyPluginAsync {
   return async function (app) {
     app.post('/create', async (request: FastifyRequest, reply: FastifyReply) => {
       const { username, password } = request.body as TCreateUserBody;
 
-      const result = db
-        .prepare('INSERT INTO users (username, password) VALUES (?, ?)')
-        .run(username, password);
+      const user = repo.create(username, password);
 
-      return reply.code(201).send({
-        id: Number(result.lastInsertRowid),
-        username,
-      });
+      return reply.code(201).send(user);
     });
   };
 }
