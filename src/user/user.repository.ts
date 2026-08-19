@@ -1,26 +1,18 @@
 import type Database from 'better-sqlite3';
 
-export interface TUsersRepository {
-  create: (
-    username: string,
-    password: string
-  ) => {
-    id: number;
-    username: string;
-  };
-}
-
-export function createUsersRepository(db: Database.Database): TUsersRepository {
+export function createUsersRepository(db: Database.Database) {
   return {
-    create(username, password) {
+    /**
+     * @description Creates single user
+     */
+    create(username: string, password: string) {
       const result = db
-        .prepare('INSERT INTO users (username, password) VALUES (?, ?)')
+        .prepare(`INSERT INTO users (username, password) VALUES (?, ?)`)
         .run(username, password);
 
-      return {
-        id: Number(result.lastInsertRowid),
-        username,
-      };
+      return db.prepare(`SELECT id, username FROM users WHERE id = ?`).get(result.lastInsertRowid);
     },
   };
 }
+
+export type TUsersRepository = ReturnType<typeof createUsersRepository>;
