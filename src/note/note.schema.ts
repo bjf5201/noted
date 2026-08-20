@@ -10,18 +10,18 @@ const noteContentSchema = Type.String({
   minLength: 1,
 });
 
-export const NoteSchema = Type.Object({
+const NoteSchema = Type.Object({
   noteId: noteIdSchema,
   title: noteTitleSchema,
   content: noteContentSchema,
 });
 
-export const CreateNoteBodySchema = Type.Object({
+const CreateNoteBodySchema = Type.Object({
   title: noteTitleSchema,
   content: noteContentSchema,
 });
 
-export const GetNoteByIdParamsSchema = Type.Object({
+const GetNoteByIdParamsSchema = Type.Object({
   noteId: noteIdSchema,
 });
 
