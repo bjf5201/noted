@@ -24,7 +24,7 @@ describe('POST /users/create', () => {
     });
 
     expect(response.statusCode).toBe(201);
-    expect(response.json()).toEqual({ id: expect.any(Number), username: 'alice' });
+    expect(response.json()).toEqual({ userId: expect.any(Number), username: 'alice' });
   });
 
   it('returns the submitted username', async () => {
@@ -36,7 +36,7 @@ describe('POST /users/create', () => {
 
     expect(response.statusCode).toBe(201);
     expect(response.json()).toEqual({
-      id: expect.any(Number),
+      userId: expect.any(Number),
       username: 'bob',
     });
   });
@@ -63,8 +63,8 @@ describe('POST /users/create', () => {
     const firstUser = firstResponse.json();
     const secondUser = secondResponse.json();
 
-    expect(firstUser.id).toEqual(expect.any(Number));
-    expect(secondUser.id).toEqual(expect.any(Number));
-    expect(secondUser.id).not.toBe(firstUser.id);
+    expect(firstUser.userId).toEqual(expect.any(Number));
+    expect(secondUser.userId).toEqual(expect.any(Number));
+    expect(secondUser.userId).not.toBe(firstUser.userId);
   });
 });

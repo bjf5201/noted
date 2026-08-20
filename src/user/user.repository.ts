@@ -10,7 +10,9 @@ export function createUsersRepository(db: Database.Database) {
         .prepare(`INSERT INTO users (username, password) VALUES (?, ?)`)
         .run(username, password);
 
-      return db.prepare(`SELECT id, username FROM users WHERE id = ?`).get(result.lastInsertRowid);
+      return db
+        .prepare(`SELECT userId, username FROM users WHERE userId = ?`)
+        .get(result.lastInsertRowid);
     },
   };
 }
