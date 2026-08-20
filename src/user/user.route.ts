@@ -1,7 +1,7 @@
 import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { type TUsersRepository } from 'noted/user/user.repository.js';
 
-export function userRoutes(repo: TUsersRepository): FastifyPluginAsync {
+export default function usersRoutes(repo: TUsersRepository): FastifyPluginAsync {
   return async function (app) {
     app.post('/create', async (request: FastifyRequest, reply: FastifyReply) => {
       const { username, password } = request.body as {
