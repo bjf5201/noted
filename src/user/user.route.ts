@@ -1,17 +1,12 @@
-import { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import { type FastifyPluginAsync } from 'fastify';
+
+import { createUsersController } from 'noted/user/user.controller.js';
 import { type TUsersRepository } from 'noted/user/user.repository.js';
 
 export default function usersRoutes(repo: TUsersRepository): FastifyPluginAsync {
+  const controller = createUsersController(repo);
+
   return async function (app) {
-    app.post('/create', async (request: FastifyRequest, reply: FastifyReply) => {
-      const { username, password } = request.body as {
-        username: string;
-        password: string;
-      };
-
-      const user = repo.create(username, password);
-
-      return reply.code(201).send(user);
-    });
+    app.post('/create', controller.create);
   };
 }
