@@ -27,7 +27,7 @@ export const GetNoteByIdParamsSchema = Type.Object({
 
 // GET /notes endpoint
 export const listNotesRouteSchema = {
-  summary: 'List notes',
+  description: 'List notes',
   response: {
     200: Type.Array(NoteSchema),
   },
@@ -35,7 +35,7 @@ export const listNotesRouteSchema = {
 
 // GET /notes/:noteId endpoint
 export const listNoteByIdRouteSchema = {
-  summary: 'List single note by id',
+  description: 'List single note by id',
   params: GetNoteByIdParamsSchema,
   response: {
     200: NoteSchema,
@@ -44,7 +44,7 @@ export const listNoteByIdRouteSchema = {
 
 // POST /notes endpooint
 export const createNoteRouteSchema = {
-  summary: 'Create a note',
+  description: 'Create a note',
   body: CreateNoteBodySchema,
   response: {
     201: NoteSchema,
