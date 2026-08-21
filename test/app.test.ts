@@ -1,31 +1,37 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { FastifyInstance } from 'fastify';
-import { createDatabase } from 'noted/database.js';
-import { buildApp } from 'noted/app.js';
+import setupTestApp from 'noted/#/helpers/setup.js';
 
-describe('GET /', () => {
-  let app: FastifyInstance;
+let ctx: { app: FastifyInstance; stop: () => Promise<void> };
 
-  beforeEach(async () => {
-    const db = createDatabase(':memory:');
-    app = buildApp(db);
-    await app.ready();
-  });
+beforeAll(async () => {
+  ctx = await setupTestApp();
+});
 
-  afterEach(async () => {
-    await app.close();
-  });
+afterAll(async () => {
+  await ctx.stop();
+});
 
-  it('returns database status', async () => {
-    const response = await app.inject({
+describe('App', () => {
+  it('GET / returns API welcome message', async () => {
+    const response = await ctx.app.inject({
       method: 'GET',
-      url: '/',
+      url: '/', //TODO: Change to `url: '/api/v1'
     });
 
     expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ message: 'Notes API reporting for duty!' });
+  });
 
+  it('GET /healh returns notes count and message', async () => {
+    const response = await ctx.app.inject({
+      method: 'GET',
+      url: '/health',
+    });
+
+    expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({
-      message: 'Database connected!',
+      message: 'Database connected, server up!',
       notes: expect.any(Number),
     });
   });
