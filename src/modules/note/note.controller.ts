@@ -1,5 +1,5 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
-import { type TNoteRepository } from 'noted/note/note.repository.js';
+import { type TNoteRepository } from './note.repository.js';
 
 interface TGetNoteByIdParams {
   noteId: number;

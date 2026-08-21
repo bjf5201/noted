@@ -1,5 +1,5 @@
 import { type FastifyReply, type FastifyRequest } from 'fastify';
-import { type TUsersRepository } from 'noted/user/user.repository.js';
+import { type TUsersRepository } from './user.repository.js';
 
 export function createUsersController(repo: TUsersRepository) {
   return {

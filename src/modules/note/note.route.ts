@@ -1,12 +1,12 @@
 import { type FastifyPluginAsync } from 'fastify';
 
-import { createNotesController } from 'noted/note/note.controller.js';
-import { type TNoteRepository } from 'noted/note/note.repository.js';
+import { createNotesController } from './note.controller.js';
+import { type TNoteRepository } from './note.repository.js';
 import {
   createNoteRouteSchema,
   listNoteByIdRouteSchema,
   listNotesRouteSchema,
-} from 'noted/note/note.schema.js';
+} from './note.schema.js';
 
 export default function notesRoutes(repo: TNoteRepository): FastifyPluginAsync {
   const controller = createNotesController(repo);
