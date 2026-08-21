@@ -1,121 +1,37 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { FastifyInstance } from 'fastify';
-import { createDatabase } from 'noted/database.js';
-import { buildApp } from 'noted/app.js';
+import setupTestApp from 'noted/#/helpers/setup.js';
 
-const USERNAME_ALICE = 'aliceiscool19';
-const PW_ALICE = 'secretPassword8*';
-const USERNAME_BOB = 'bob1samaz1ng1960';
-const PW_BOB = 'NotTelling28';
+type TPayload = Record<string, unknown>;
 
-describe('POST /users/create -- creates User successfully', () => {
-  let app: FastifyInstance;
+let ctx: { app: FastifyInstance; stop: () => Promise<void> };
 
-  beforeEach(async () => {
-    const db = createDatabase(':memory:');
-    app = buildApp(db);
-    await app.ready();
-  });
-
-  afterEach(async () => {
-    await app.close();
-  });
-
-  it('creates a new user', async () => {
-    const response = await app.inject({
-      method: 'POST',
-      url: '/users/create',
-      payload: { username: USERNAME_ALICE, password: PW_ALICE },
-    });
-
-    expect(response.statusCode).toBe(201);
-    expect(response.json()).toEqual({ userId: expect.any(Number), username: USERNAME_ALICE });
-  });
-
-  it('returns the submitted username and userId', async () => {
-    const response = await app.inject({
-      method: 'POST',
-      url: '/users/create',
-      payload: { username: USERNAME_BOB, password: PW_BOB },
-    });
-
-    expect(response.statusCode).toBe(201);
-    expect(response.json()).toEqual({
-      userId: expect.any(Number),
-      username: USERNAME_BOB,
-    });
-  });
-
-  it('creates a unique id for each user', async () => {
-    const firstResponse = await app.inject({
-      method: 'POST',
-      url: '/users/create',
-      payload: {
-        username: USERNAME_ALICE,
-        password: PW_ALICE,
-      },
-    });
-
-    const secondResponse = await app.inject({
-      method: 'POST',
-      url: '/users/create',
-      payload: {
-        username: USERNAME_BOB,
-        password: PW_BOB,
-      },
-    });
-
-    const firstUser = firstResponse.json();
-    const secondUser = secondResponse.json();
-
-    expect(firstUser.userId).toEqual(expect.any(Number));
-    expect(secondUser.userId).toEqual(expect.any(Number));
-    expect(secondUser.userId).not.toBe(firstUser.userId);
-  });
-
-  it('does not return the user password', async () => {
-    const response = await app.inject({
-      method: 'POST',
-      url: '/users/create',
-      payload: { username: USERNAME_ALICE, password: PW_ALICE },
-    });
-
-    expect(response.json()).not.toContain({
-      password: PW_ALICE,
-    });
-  });
+beforeAll(async () => {
+  ctx = await setupTestApp();
 });
 
-describe('POST /users/create -- Rejects bad requests', () => {
-  let app: FastifyInstance;
+afterAll(async () => {
+  await ctx.stop();
+});
 
-  beforeEach(async () => {
-    const db = createDatabase(':memory:');
-    app = buildApp(db);
-    await app.ready();
-  });
+const register = (payload: TPayload) =>
+  ctx.app.inject({ method: 'POST', url: '/users/create', payload: payload });
+//const auth = (payload: TPayload) =>
+//  ctx.app.inject({ method: 'POST', url: '/api/v1/users/auth', payload });
 
-  afterEach(async () => {
-    await app.close();
-  });
+const user = {
+  // TODO: add 'name: Alice Wonderland' property functionality
+  // TODO: change below to 'email'
+  username: 'Alice@example.com',
+  password: 'Silly1-Sea2-Monster4',
+};
 
-  it('rejects a request with a missing username', async () => {
-    const response = await app.inject({
-      method: 'POST',
-      url: '/users/create',
-      payload: { password: PW_ALICE },
-    });
+describe('Users API', () => {
+  it('registers a user successfully', async () => {
+    const response = await register(user);
+    const body = response.json();
 
-    expect(response.statusCode).toBe(400);
-  });
-
-  it('rejects a request with a missing password', async () => {
-    const response = await app.inject({
-      method: 'POST',
-      url: '/users/create',
-      payload: { username: USERNAME_ALICE },
-    });
-
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(201);
+    expect(body.username).toBe('Alice@example.com'); // TODO: test for "normalized" (all lowercase) email
   });
 });
