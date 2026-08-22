@@ -12,7 +12,23 @@ export default function notesRoutes(repo: TNoteRepository): FastifyPluginAsync {
   const controller = createNotesController(repo);
 
   return async function (app) {
-    // POST /notes endpoint
+    /**
+     * @swagger
+     * /notes:
+     *   post:
+     *     description: Create a new note
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               title:
+     *                 type: string
+     *               content:
+     *                 type: string
+     */
     app.post(
       '/',
       {
@@ -21,7 +37,15 @@ export default function notesRoutes(repo: TNoteRepository): FastifyPluginAsync {
       controller.create
     );
 
-    // GET /notes endpoint
+    /**
+     * @swagger
+     * /notes:
+     *   get:
+     *     description: List all notes
+     *     responses:
+     *       200:
+     *         description: Array of notes
+     */
     app.get(
       '/',
       {
@@ -30,7 +54,17 @@ export default function notesRoutes(repo: TNoteRepository): FastifyPluginAsync {
       controller.getAll
     );
 
-    // GET /notes/:noteId endpoint
+    /**
+     * @swagger
+     * /notes/{noteId}:
+     *   get:
+     *     description: Get a single note by ID
+     *     parameters:
+     *       - in: path
+     *         name: noteId
+     *         schema:
+     *           type: integer
+     */
     app.get(
       '/:noteId',
       {
