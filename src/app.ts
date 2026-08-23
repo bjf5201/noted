@@ -2,14 +2,17 @@ import type Database from 'better-sqlite3';
 import Fastify from 'fastify';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
-import notesRoutes from './modules/note/note.route.js';
-import { createNotesRepository } from './modules/note/note.repository.js';
+import initSwagger from 'noted/plugins/swagger.plugin.js';
+import notesRoutes from 'noted/routes/note/note.route.js';
+import { createNotesRepository } from 'noted/routes/note/note.repository.js';
 
-import usersRoutes from './modules/user/user.route.js';
-import { createUsersRepository } from './modules/user/user.repository.js';
+import usersRoutes from 'noted/routes/user/user.route.js';
+import { createUsersRepository } from 'noted/routes/user/user.repository.js';
 
 export function buildApp(db: Database.Database) {
   const app = Fastify().withTypeProvider<TypeBoxTypeProvider>();
+
+  app.register(initSwagger);
 
   const notesRepository = createNotesRepository(db);
   const usersRepository = createUsersRepository(db);
