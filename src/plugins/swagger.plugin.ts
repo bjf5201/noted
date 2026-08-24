@@ -1,10 +1,16 @@
 import type { FastifyInstance } from 'fastify';
 import fp from 'fastify-plugin';
-import Swagger from '@fastify/swagger';
-import SwaggerUi from '@fastify/swagger-ui';
+import { fastifySwagger } from '@fastify/swagger';
+import { fastifySwaggerUi } from '@fastify/swagger-ui';
 
 async function initSwagger(app: FastifyInstance) {
-  await app.register(Swagger, {
+  /**
+   * Fastify plugin for serving Swagger (OpenAPI v2 or OpenAPI v3) schemas
+   *
+   * @see {@link https://github.com/fastify/fastify-swagger}
+   */
+  await app.register(fastifySwagger, {
+    hideUntagged: true,
     openapi: {
       openapi: '3.0.0',
       info: {
@@ -13,6 +19,10 @@ async function initSwagger(app: FastifyInstance) {
         description: 'The API for Noted markdown notes app',
       },
       tags: [
+        {
+          name: 'auth',
+          description: 'Authorization routes',
+        },
         {
           name: 'user',
           description: 'User routes',
@@ -35,8 +45,14 @@ async function initSwagger(app: FastifyInstance) {
     },
   });
 
-  await app.register(SwaggerUi, {
-    routePrefix: '/docs',
+  /**
+   * Fastify plugin for serving Swagger UI
+   *
+   * @see {@link https://github.com/fastify/fastify-swagger-ui}
+   */
+
+  await app.register(fastifySwaggerUi, {
+    routePrefix: '/api/docs',
     uiConfig: {
       docExpansion: 'full',
       deepLinking: false,
