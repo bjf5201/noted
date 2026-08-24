@@ -2,21 +2,9 @@ import type { FastifyInstance } from 'fastify';
 
 import { createDatabase } from 'noted/database.js';
 import { buildApp } from 'noted/app.js';
-/**
- *   let app: FastifyInstance;
 
-  beforeEach(async () => {
-    const db = createDatabase(':memory:');
-    app = buildApp(db);
-    await app.ready();
-  });
-
-  afterEach(async () => {
-    await app.close();
-  });
- */
 /**
- * Spins up an in-memory MongoDB and builds the app pointing at it.
+ * Spins up an in-memory SQLite and builds the app pointing at it.
  * Env vars must be set BEFORE the app is imported so the app picks them up.
  */
 const setupTestApp = async (): Promise<{ app: FastifyInstance; stop: () => Promise<void> }> => {

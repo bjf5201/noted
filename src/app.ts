@@ -3,11 +3,11 @@ import Fastify from 'fastify';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
 
 import initSwagger from 'noted/plugins/swagger.plugin.js';
-import notesRoutes from 'noted/routes/note/note.route.js';
-import { createNotesRepository } from 'noted/routes/note/note.repository.js';
+import notesRoutes from 'noted/routes/api/note/note.route.js';
+import { createNotesRepository } from 'noted/routes/api/note/note.repository.js';
 
-import usersRoutes from 'noted/routes/user/user.route.js';
-import { createUsersRepository } from 'noted/routes/user/user.repository.js';
+import usersRoutes from 'noted/routes/api/user/user.route.js';
+import { createUsersRepository } from 'noted/routes/api/user/user.repository.js';
 
 export function buildApp(db: Database.Database) {
   const app = Fastify().withTypeProvider<TypeBoxTypeProvider>();

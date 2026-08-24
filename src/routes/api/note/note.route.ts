@@ -6,7 +6,7 @@ import {
   createNoteRouteSchema,
   listNoteByIdRouteSchema,
   listNotesRouteSchema,
-} from './note.schema.js';
+} from 'noted/schemas/note.schema.js';
 
 export default function notesRoutes(repo: TNoteRepository): FastifyPluginAsync {
   const controller = createNotesController(repo);
