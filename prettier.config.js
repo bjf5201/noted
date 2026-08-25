@@ -6,24 +6,24 @@ const prettierConfig = {
   proseWrap: 'preserve',
   singleQuote: true,
   tabWidth: 2,
-  trailingComma: 'es5',
+  trailingComma: 'none',
   useTabs: false,
   overrides: [
     {
       files: '**/*.{json,jscon5,jsonc}',
       options: {
         parser: 'json',
-        singleQuote: false,
-      },
+        singleQuote: false
+      }
     },
     {
       files: '**/*.{md,mdx}',
       options: {
         parser: 'mdx',
-        singleQuote: false,
-      },
-    },
-  ],
+        singleQuote: false
+      }
+    }
+  ]
 };
 
 export default prettierConfig;
