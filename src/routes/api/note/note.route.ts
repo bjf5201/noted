@@ -5,7 +5,7 @@ import { type TNoteRepository } from './note.repository.js';
 import {
   createNoteRouteSchema,
   listNoteByIdRouteSchema,
-  listNotesRouteSchema,
+  listNotesRouteSchema
 } from 'noted/schemas/note.schema.js';
 
 export default function notesRoutes(repo: TNoteRepository): FastifyPluginAsync {
@@ -32,7 +32,7 @@ export default function notesRoutes(repo: TNoteRepository): FastifyPluginAsync {
     app.post(
       '/',
       {
-        schema: createNoteRouteSchema,
+        schema: createNoteRouteSchema
       },
       controller.create
     );
@@ -49,7 +49,7 @@ export default function notesRoutes(repo: TNoteRepository): FastifyPluginAsync {
     app.get(
       '/',
       {
-        schema: listNotesRouteSchema,
+        schema: listNotesRouteSchema
       },
       controller.getAll
     );
@@ -68,7 +68,7 @@ export default function notesRoutes(repo: TNoteRepository): FastifyPluginAsync {
     app.get(
       '/:noteId',
       {
-        schema: listNoteByIdRouteSchema,
+        schema: listNoteByIdRouteSchema
       },
       controller.getById
     );

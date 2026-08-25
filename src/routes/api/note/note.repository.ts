@@ -39,7 +39,7 @@ export function createNotesRepository(db: Database.Database) {
       return db
         .prepare(`SELECT noteId, title, content FROM notes WHERE noteId = ?`)
         .get(result.lastInsertRowid);
-    },
+    }
   };
 }
 

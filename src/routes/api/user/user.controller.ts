@@ -12,7 +12,7 @@ export function createUsersController(repo: TUsersRepository) {
       const user = repo.create(body.username, body.password);
 
       return response.code(201).send(user);
-    },
+    }
   };
 }
 

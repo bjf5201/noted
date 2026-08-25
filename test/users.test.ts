@@ -23,7 +23,7 @@ const user = {
   // TODO: add 'name: Alice Wonderland' property functionality
   // TODO: change below to 'email'
   username: 'Alice@example.com',
-  password: 'Silly1-Sea2-Monster4',
+  password: 'Silly1-Sea2-Monster4'
 };
 
 describe('Users API', () => {

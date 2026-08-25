@@ -16,7 +16,7 @@ export default defineConfig([
   // Globally ignored files by ESLint
   includeIgnoreFile(gitignorePath),
   {
-    ignores: ['public', '.husky', '.github', 'pnpm-lock.yaml'],
+    ignores: ['public', '.husky', '.github', 'pnpm-lock.yaml']
   },
 
   // All TypeScript files
@@ -27,13 +27,13 @@ export default defineConfig([
       ecmaVersion: 2024,
       globals: {
         ...globals.node,
-        ...globals.browser,
+        ...globals.browser
       },
       parserOptions: {
         projectService: true,
-        tsconfigRootDir: fileURLToPath(import.meta.url),
+        tsconfigRootDir: fileURLToPath(import.meta.url)
       },
-      sourceType: 'module',
+      sourceType: 'module'
     },
     rules: {
       // General
@@ -48,8 +48,8 @@ export default defineConfig([
           // using eslint-plugin-simple-import-sort instead
           ignoreDeclarationSort: true,
           memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-          allowSeparatedGroups: true,
-        },
+          allowSeparatedGroups: true
+        }
       ],
 
       // Typescript specific
@@ -58,8 +58,8 @@ export default defineConfig([
         'warn',
         {
           ignoreRestSiblings: true,
-          argsIgnorePattern: '^_',
-        },
+          argsIgnorePattern: '^_'
+        }
       ],
       '@typescript-eslint/consistent-type-definitions': ['warn', 'interface'],
       '@typescript-eslint/naming-convention': [
@@ -69,11 +69,11 @@ export default defineConfig([
           format: ['PascalCase'],
           custom: {
             regex: '^T[A-Z]',
-            match: true,
-          },
-        },
-      ],
-    },
+            match: true
+          }
+        }
+      ]
+    }
   },
 
   // Test files
@@ -82,19 +82,19 @@ export default defineConfig([
     files: ['**/*.{spec,test}.{ts,tsx}'],
     languageOptions: {
       globals: {
-        ...vitest.environments.env.globals,
-      },
-    },
+        ...vitest.environments.env.globals
+      }
+    }
   },
 
   // Vanilla JS files
   {
     files: ['**/*.{js,mjs}'],
-    extends: [tseslint.configs.disableTypeChecked],
+    extends: [tseslint.configs.disableTypeChecked]
   },
 
   // Prettier config
   // turns off all rules that conflict with Prettier formatter
   // MUST be last!
-  eslintConfigPrettier,
+  eslintConfigPrettier
 ]);

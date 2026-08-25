@@ -18,11 +18,11 @@ export function buildApp(db: Database.Database) {
   const usersRepository = createUsersRepository(db);
 
   app.register(notesRoutes(notesRepository), {
-    prefix: '/notes',
+    prefix: '/notes'
   });
 
   app.register(usersRoutes(usersRepository), {
-    prefix: '/users',
+    prefix: '/users'
   });
 
   app.get('/', async () => {
@@ -34,7 +34,7 @@ export function buildApp(db: Database.Database) {
 
     return {
       message: 'Database connected, server up!',
-      notes: result.count,
+      notes: result.count
     };
   });
 

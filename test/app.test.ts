@@ -16,7 +16,7 @@ describe('App', () => {
   it('GET / returns API welcome message', async () => {
     const response = await ctx.app.inject({
       method: 'GET',
-      url: '/', //TODO: Change to `url: '/api/v1'
+      url: '/' //TODO: Change to `url: '/api/v1'
     });
 
     expect(response.statusCode).toBe(200);
@@ -26,13 +26,13 @@ describe('App', () => {
   it('GET /healh returns notes count and message', async () => {
     const response = await ctx.app.inject({
       method: 'GET',
-      url: '/health',
+      url: '/health'
     });
 
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({
       message: 'Database connected, server up!',
-      notes: expect.any(Number),
+      notes: expect.any(Number)
     });
   });
 });

@@ -19,7 +19,7 @@ describe('GET /notes', () => {
   it('returns empty array when no notes exist', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: '/notes',
+      url: '/notes'
     });
 
     expect(response.statusCode).toBe(200);
@@ -32,13 +32,13 @@ describe('GET /notes', () => {
       url: '/notes',
       payload: {
         title: 'Test Note 1',
-        content: '# Test Note',
-      },
+        content: '# Test Note'
+      }
     });
 
     const response = await app.inject({
       method: 'GET',
-      url: '/notes',
+      url: '/notes'
     });
 
     const notes = response.json();
@@ -47,7 +47,7 @@ describe('GET /notes', () => {
     expect(notes[0]).toEqual({
       noteId: expect.any(Number),
       title: 'Test Note 1',
-      content: '# Test Note',
+      content: '# Test Note'
     });
   });
 
@@ -57,8 +57,8 @@ describe('GET /notes', () => {
       url: '/notes',
       payload: {
         title: 'First note',
-        content: 'Created first.',
-      },
+        content: 'Created first.'
+      }
     });
 
     await app.inject({
@@ -66,13 +66,13 @@ describe('GET /notes', () => {
       url: '/notes',
       payload: {
         title: 'Second Note',
-        content: 'Created second.',
-      },
+        content: 'Created second.'
+      }
     });
 
     const response = await app.inject({
       method: 'GET',
-      url: '/notes',
+      url: '/notes'
     });
 
     const notes = response.json();
@@ -103,8 +103,8 @@ describe('GET /notes/:noteId', () => {
       url: '/notes',
       payload: {
         title: 'First note',
-        content: '# First Note Content',
-      },
+        content: '# First Note Content'
+      }
     });
 
     await app.inject({
@@ -112,15 +112,15 @@ describe('GET /notes/:noteId', () => {
       url: '/notes',
       payload: {
         title: 'Second note',
-        content: '# Second \n ## Note Content',
-      },
+        content: '# Second \n ## Note Content'
+      }
     });
 
     const created = notetoFind.json();
 
     const response = await app.inject({
       method: 'GET',
-      url: `/notes/${created.noteId}`,
+      url: `/notes/${created.noteId}`
     });
 
     expect(response.statusCode).toBe(200);
@@ -128,14 +128,14 @@ describe('GET /notes/:noteId', () => {
     expect(response.json()).toEqual({
       noteId: created.noteId,
       title: 'First note',
-      content: '# First Note Content',
+      content: '# First Note Content'
     });
   });
 
   it('returns 404 when the note does not exist', async () => {
     const response = await app.inject({
       method: 'GET',
-      url: '/notes/999',
+      url: '/notes/999'
     });
 
     expect(response.statusCode).toBe(404);
@@ -161,8 +161,8 @@ describe('POST /notes', () => {
       url: '/notes',
       payload: {
         title: 'My first note',
-        content: 'Hello world',
-      },
+        content: 'Hello world'
+      }
     });
 
     expect(response.statusCode).toBe(201);
@@ -170,7 +170,7 @@ describe('POST /notes', () => {
     expect(response.json()).toEqual({
       noteId: expect.any(Number),
       title: 'My first note',
-      content: 'Hello world',
+      content: 'Hello world'
     });
   });
 });

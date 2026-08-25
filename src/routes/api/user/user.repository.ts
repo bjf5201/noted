@@ -13,7 +13,7 @@ export function createUsersRepository(db: Database.Database) {
       return db
         .prepare(`SELECT userId, username FROM users WHERE userId = ?`)
         .get(result.lastInsertRowid);
-    },
+    }
   };
 }
 

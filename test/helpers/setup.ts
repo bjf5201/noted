@@ -22,7 +22,7 @@ const setupTestApp = async (): Promise<{ app: FastifyInstance; stop: () => Promi
     app,
     stop: async () => {
       await app.close();
-    },
+    }
   };
 };
 

@@ -5,9 +5,9 @@ export default {
   // run formatting and linting on staged files only
   '**/*.{ts,tsx,js,jsx}': (filenames) => [
     `pnpm format ${filenames.join(' ')}`,
-    `pnpm lint ${filenames.join(' ')}`,
+    `pnpm lint ${filenames.join(' ')}`
   ],
 
   // format non-typescript files
-  '**/*.{json,css,html,md,mdx}': ['pnpm format'],
+  '**/*.{json,css,html,md,mdx}': ['pnpm format']
 };

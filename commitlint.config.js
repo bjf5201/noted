@@ -14,8 +14,8 @@ export default {
         'chore', // Updating build tasks, package manager configs, etc; no production code change
         'perf', // A code change that improves performance
         'revert', // Reverts a previous commit
-        'ci', // Changes to our CI configuration files and scripts
-      ],
-    ],
-  },
+        'ci' // Changes to our CI configuration files and scripts
+      ]
+    ]
+  }
 };

@@ -29,7 +29,7 @@ export function createNotesController(repo: TNoteRepository) {
       } else {
         return response.code(404).send();
       }
-    },
+    }
   };
 }
 

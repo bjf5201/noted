@@ -16,33 +16,33 @@ async function initSwagger(app: FastifyInstance) {
       info: {
         title: 'Noted API',
         version: '0.0.1', //TODO: get this from package.json programmatically
-        description: 'The API for Noted markdown notes app',
+        description: 'The API for Noted markdown notes app'
       },
       tags: [
         {
           name: 'auth',
-          description: 'Authorization routes',
+          description: 'Authorization routes'
         },
         {
           name: 'user',
-          description: 'User routes',
+          description: 'User routes'
         },
         {
           name: 'note',
-          description: 'Note routes',
+          description: 'Note routes'
         },
         {
           name: 'root',
-          description: 'Base routes from root, including "/" and "/health"',
-        },
+          description: 'Base routes from root, including "/" and "/health"'
+        }
       ],
       servers: [
         {
           url: `http://localhost:${process.env.PORT ?? 3000}`,
-          description: 'Development server',
-        },
-      ],
-    },
+          description: 'Development server'
+        }
+      ]
+    }
   });
 
   /**
@@ -55,7 +55,7 @@ async function initSwagger(app: FastifyInstance) {
     routePrefix: '/api/docs',
     uiConfig: {
       docExpansion: 'full',
-      deepLinking: false,
+      deepLinking: false
     },
     uiHooks: {
       onRequest(_request, _reply, next) {
@@ -63,15 +63,15 @@ async function initSwagger(app: FastifyInstance) {
       },
       preHandler(_request, _reply, next) {
         next();
-      },
+      }
     },
     staticCSP: true,
-    transformStaticCSP: (header) => header,
+    transformStaticCSP: (header) => header
   });
 
   app.log.debug('Open API Swagger documentation is available at "/docs"');
 }
 
 export default fp(initSwagger, {
-  name: 'swagger',
+  name: 'swagger'
 });
