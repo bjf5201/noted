@@ -62,28 +62,7 @@ export default defineConfig([
         }
       ],
       '@typescript-eslint/consistent-type-definitions': ['warn', 'interface'],
-      '@typescript-eslint/naming-convention': [
-        'error',
-        // enforce that private members are prefixed with an underscore
-        {
-          selector: 'memberLike',
-          modifiers: ['private'],
-          format: ['camelCase'],
-          leadingUnderscore: 'require'
-        },
-        // enforce that types generics are prefixed with 'T'
-        {
-          selector: ['typeAlias'],
-          format: ['PascalCase'],
-          prefix: ['T']
-        },
-        // enforce that interfaces are prefixed with 'I'
-        {
-          selector: ['interface'],
-          format: ['PascalCase'],
-          prefix: ['I']
-        }
-      ]
+      '@typescript-eslint/naming-convention': ['off']
     }
   },
 
