@@ -17,7 +17,7 @@ export const UserSchema = {
 
 export const UserBodySchema = Type.Object(
   {
-    id: Type.String({ format: 'uuid', description: 'User ID' }),
+    id: Type.Integer({ description: 'User ID' }),
     ...UserSchema
   },
   {
