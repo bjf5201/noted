@@ -1,23 +1,23 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { FastifyInstance } from 'fastify';
-import setupTestApp from 'noted/#/helpers/setup.js';
+import { build } from 'noted/#/helpers/setup.js';
 
 type TPayload = Record<string, unknown>;
 
-let ctx: { app: FastifyInstance; stop: () => Promise<void> };
+let ctx: FastifyInstance;
 
 beforeAll(async () => {
-  ctx = await setupTestApp();
+  ctx = await build();
 });
 
 afterAll(async () => {
-  await ctx.stop();
+  await ctx.close();
 });
 
 const register = (payload: TPayload) =>
-  ctx.app.inject({ method: 'POST', url: '/users/create', payload: payload });
+  ctx.inject({ method: 'POST', url: '/users/create', payload: payload });
 //const auth = (payload: TPayload) =>
-//  ctx.app.inject({ method: 'POST', url: '/api/v1/users/auth', payload });
+//  ctx.inject({ method: 'POST', url: '/api/v1/users/auth', payload });
 
 const user = {
   // TODO: add 'name: Alice Wonderland' property functionality

@@ -1,23 +1,16 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { FastifyInstance } from 'fastify';
-import { createDatabase } from '../src/plugins/external/database.js';
-import { buildApp } from 'noted/app.js';
+import { build } from './helpers/setup.js';
 
 describe('GET /notes', () => {
-  let app: FastifyInstance;
+  let ctx: FastifyInstance;
 
   beforeEach(async () => {
-    const db = createDatabase(':memory:');
-    app = buildApp(db);
-    await app.ready();
-  });
-
-  afterEach(async () => {
-    await app.close();
+    ctx = await build();
   });
 
   it('returns empty array when no notes exist', async () => {
-    const response = await app.inject({
+    const response = await ctx.inject({
       method: 'GET',
       url: '/notes'
     });
@@ -27,7 +20,7 @@ describe('GET /notes', () => {
   });
 
   it('returns notes that have been created', async () => {
-    await app.inject({
+    await ctx.inject({
       method: 'POST',
       url: '/notes',
       payload: {
@@ -36,7 +29,7 @@ describe('GET /notes', () => {
       }
     });
 
-    const response = await app.inject({
+    const response = await ctx.inject({
       method: 'GET',
       url: '/notes'
     });
@@ -52,7 +45,7 @@ describe('GET /notes', () => {
   });
 
   it('returns newest notes first', async () => {
-    await app.inject({
+    await ctx.inject({
       method: 'POST',
       url: '/notes',
       payload: {
@@ -61,7 +54,7 @@ describe('GET /notes', () => {
       }
     });
 
-    await app.inject({
+    await ctx.inject({
       method: 'POST',
       url: '/notes',
       payload: {
@@ -70,7 +63,7 @@ describe('GET /notes', () => {
       }
     });
 
-    const response = await app.inject({
+    const response = await ctx.inject({
       method: 'GET',
       url: '/notes'
     });
@@ -85,20 +78,14 @@ describe('GET /notes', () => {
 });
 
 describe('GET /notes/:noteId', () => {
-  let app: FastifyInstance;
+  let ctx: FastifyInstance;
 
   beforeEach(async () => {
-    const db = createDatabase(':memory:');
-    app = buildApp(db);
-    await app.ready();
-  });
-
-  afterEach(async () => {
-    await app.close();
+    ctx = await build();
   });
 
   it('returns the note requested by id', async () => {
-    const notetoFind = await app.inject({
+    const notetoFind = await ctx.inject({
       method: 'POST',
       url: '/notes',
       payload: {
@@ -107,7 +94,7 @@ describe('GET /notes/:noteId', () => {
       }
     });
 
-    await app.inject({
+    await ctx.inject({
       method: 'POST',
       url: '/notes',
       payload: {
@@ -118,7 +105,7 @@ describe('GET /notes/:noteId', () => {
 
     const created = notetoFind.json();
 
-    const response = await app.inject({
+    const response = await ctx.inject({
       method: 'GET',
       url: `/notes/${created.noteId}`
     });
@@ -133,7 +120,7 @@ describe('GET /notes/:noteId', () => {
   });
 
   it('returns 404 when the note does not exist', async () => {
-    const response = await app.inject({
+    const response = await ctx.inject({
       method: 'GET',
       url: '/notes/999'
     });
@@ -143,20 +130,14 @@ describe('GET /notes/:noteId', () => {
 });
 
 describe('POST /notes', () => {
-  let app: FastifyInstance;
+  let ctx: FastifyInstance;
 
   beforeEach(async () => {
-    const db = createDatabase(':memory:');
-    app = buildApp(db);
-    await app.ready();
-  });
-
-  afterEach(async () => {
-    await app.close();
+    ctx = await build();
   });
 
   it('creates a new note', async () => {
-    const response = await app.inject({
+    const response = await ctx.inject({
       method: 'POST',
       url: '/notes',
       payload: {

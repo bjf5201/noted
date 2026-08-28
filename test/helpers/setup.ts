@@ -1,29 +1,49 @@
-import type { FastifyInstance } from 'fastify';
+import Fastify, { FastifyInstance, LightMyRequestResponse } from 'fastify';
+import fp from 'fastify-plugin';
+import { afterEach, expect } from 'vitest';
+import { webApp } from 'noted/app.js';
 
-import { createDatabase } from '../../src/plugins/external/database.js';
-import { buildApp } from 'noted/app.js';
+declare module 'fastify' {
+  interface FastifyInstance {
+    login: typeof login;
+  }
+}
 
-/**
- * Spins up an in-memory SQLite and builds the app pointing at it.
- * Env vars must be set BEFORE the app is imported so the app picks them up.
- */
-const setupTestApp = async (): Promise<{ app: FastifyInstance; stop: () => Promise<void> }> => {
-  process.env.NODE_ENV = 'test';
-  process.env.LOG_LEVEL = 'silent';
-  process.env.JWT_SECRET = 'test-secret';
-  process.env.SALT = '4';
-  process.env.SQLITE_DATABASE = 'test';
+export function config() {
+  return {
+    skipOverride: true
+  };
+}
 
-  const db = createDatabase(':memory:');
-  const app = buildApp(db);
+export function expectValidationError(res: LightMyRequestResponse, expectedMessage: string) {
+  expect(res.statusCode).toBe(400);
+  const { message } = JSON.parse(res.payload);
+  expect(message).toBe(expectedMessage);
+}
+
+async function login(this: FastifyInstance, username: string) {
+  const res = await this.inject({
+    method: 'POST',
+    url: '/api/auth/login',
+    payload: {
+      username,
+      password: 'Password123$'
+    }
+  });
+
+  return res; //TODO: change to return a JWT cookie?
+}
+
+export async function build() {
+  const app = Fastify();
+
+  app.register(fp(webApp), config());
+
   await app.ready();
 
-  return {
-    app,
-    stop: async () => {
-      await app.close();
-    }
-  };
-};
+  app.login = login;
 
-export default setupTestApp;
+  afterEach(() => app.close());
+
+  return app;
+}

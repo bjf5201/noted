@@ -1,20 +1,16 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { FastifyInstance } from 'fastify';
-import setupTestApp from 'noted/#/helpers/setup.js';
+import { build } from 'noted/#/helpers/setup.js';
 
-let ctx: { app: FastifyInstance; stop: () => Promise<void> };
+let ctx: FastifyInstance;
 
 beforeAll(async () => {
-  ctx = await setupTestApp();
-});
-
-afterAll(async () => {
-  await ctx.stop();
+  ctx = await build();
 });
 
 describe('App', () => {
   it('GET / returns API welcome message', async () => {
-    const response = await ctx.app.inject({
+    const response = await ctx.inject({
       method: 'GET',
       url: '/' //TODO: Change to `url: '/api/v1'
     });
@@ -24,7 +20,7 @@ describe('App', () => {
   });
 
   it('GET /healh returns notes count and message', async () => {
-    const response = await ctx.app.inject({
+    const response = await ctx.inject({
       method: 'GET',
       url: '/health'
     });
