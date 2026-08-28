@@ -25,7 +25,7 @@ function getLoggerOpts() {
   return { level: process.env.LOG_LEVEL ?? 'silent' };
 }
 
-const app = Fastify({
+const appOptions = {
   logger: getLoggerOpts(),
   connectionTimeout: 120_000,
   requestTimeout: 60_000,
@@ -35,22 +35,27 @@ const app = Fastify({
   },
   ajv: {
     customOptions: {
-      coerceTypes: 'array',
-      removeAdditional: 'all'
+      coerceTypes: 'array' as const,
+      removeAdditional: 'all' as const
     }
   }
-});
+};
+
+const app = Fastify(appOptions);
 
 async function init() {
   app.register(fp(webApp));
 
-  closeWithGrace({ delay: 500 }, async ({ err }) => {
-    if (err != null) {
-      app.log.error(err);
-    }
+  closeWithGrace(
+    { delay: Number(process.env.FASTIFY_CLOSE_GRACE_DELAY ?? 500) },
+    async ({ err }) => {
+      if (err != null) {
+        app.log.error(err);
+      }
 
-    await app.close();
-  });
+      await app.close();
+    }
+  );
 
   await app.ready();
 
