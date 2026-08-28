@@ -17,7 +17,7 @@ export const UserSchema = {
 
 export const UserBodySchema = Type.Object(
   {
-    id: Type.Integer({ description: 'User ID' }),
+    userId: Type.Integer({ description: 'User ID' }),
     ...UserSchema
   },
   {
@@ -34,7 +34,7 @@ export const createUserSchema = {
   tags: ['user'],
   summary: 'Create user',
   description: 'Create a new user',
-  body: Type.Omit(UserBodySchema, ['id', 'password', 'dateOfCreation', 'dateOfLastAccess']),
+  body: Type.Omit(UserBodySchema, ['userId', 'password', 'dateOfCreation', 'dateOfLastAccess']),
   response: {
     201: UserResponse,
     400: ErrorResponse,
@@ -59,7 +59,7 @@ export const getUserSchema = {
   summary: 'Get user by id',
   description: 'Get a user by ID',
   params: Type.Object({
-    id: Type.String({ format: 'uuid', description: 'User ID' })
+    userId: Type.Integer({ description: 'User ID' })
   }),
   response: {
     200: UserResponse,
@@ -105,3 +105,7 @@ export type TUserParams = Static<typeof getUserSchema.params>;
 export type TUserResponseSchema = Static<typeof UserResponse>;
 export type TCreateUserBody = Static<typeof createUserSchema.body>;
 export type TUpdateUserBody = Static<typeof updateUserSchema.body>;
+
+export type TCreateUserDto = TCreateUserBody;
+export type TUpdateUserDto = TUpdateUserBody;
+export type TUserParamsDto = TUserParams;

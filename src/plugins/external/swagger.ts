@@ -1,15 +1,15 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import { fastifySwagger } from '@fastify/swagger';
 import { fastifySwaggerUi } from '@fastify/swagger-ui';
 
-async function initSwagger(app: FastifyInstance) {
+const swaggerPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
   /**
    * Fastify plugin for serving Swagger (OpenAPI v2 or OpenAPI v3) schemas
    *
    * @see {@link https://github.com/fastify/fastify-swagger}
    */
-  await app.register(fastifySwagger, {
+  await fastify.register(fastifySwagger, {
     hideUntagged: true,
     openapi: {
       openapi: '3.0.0',
@@ -51,7 +51,7 @@ async function initSwagger(app: FastifyInstance) {
    * @see {@link https://github.com/fastify/fastify-swagger-ui}
    */
 
-  await app.register(fastifySwaggerUi, {
+  await fastify.register(fastifySwaggerUi, {
     routePrefix: '/api/docs',
     uiConfig: {
       docExpansion: 'full',
@@ -69,9 +69,9 @@ async function initSwagger(app: FastifyInstance) {
     transformStaticCSP: (header) => header
   });
 
-  app.log.debug('Open API Swagger documentation is available at "/docs"');
-}
+  fastify.log.debug('Open API Swagger documentation is available at "/docs"');
+};
 
-export default fp(initSwagger, {
+export default fp(swaggerPlugin, {
   name: 'swagger'
 });

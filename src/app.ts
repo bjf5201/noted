@@ -1,42 +1,47 @@
-import type Database from 'better-sqlite3';
-import Fastify from 'fastify';
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
+import { join } from 'node:path';
+import { FastifyError, FastifyInstance, FastifyPluginOptions } from 'fastify';
+import fastifyAutoload from '@fastify/autoload';
 
-import initSwagger from 'noted/plugins/swagger.plugin.js';
-import notesRoutes from 'noted/routes/api/note/note.route.js';
-import { createNotesRepository } from 'noted/routes/api/note/note.repository.js';
-
-import usersRoutes from 'noted/routes/api/user/user.route.js';
-import { createUsersRepository } from 'noted/routes/api/user/user.repository.js';
-
-export function buildApp(db: Database.Database) {
-  const app = Fastify().withTypeProvider<TypeBoxTypeProvider>();
-
-  app.register(initSwagger);
-
-  const notesRepository = createNotesRepository(db);
-  const usersRepository = createUsersRepository(db);
-
-  app.register(notesRoutes(notesRepository), {
-    prefix: '/notes'
+export async function webApp(fastify: FastifyInstance, opts: FastifyPluginOptions) {
+  // Register external plugins first, since they need to be available to application-specific plugins
+  await fastify.register(fastifyAutoload, {
+    dir: join(import.meta.dirname, 'plugins/external'),
+    options: {}
   });
 
-  app.register(usersRoutes(usersRepository), {
-    prefix: '/users'
+  // Register application-specific plugins before routes
+  await fastify.register(fastifyAutoload, {
+    dir: join(import.meta.dirname, 'plugins/app'),
+    options: { ...opts }
   });
 
-  app.get('/', async () => {
-    return { message: 'Notes API reporting for duty!' };
+  // Loads routes (defined as plugins in 'src/routes')
+  await fastify.register(fastifyAutoload, {
+    dir: join(import.meta.dirname, 'routes'),
+    options: { ...opts }
   });
 
-  app.get('/health', async () => {
-    const result = db.prepare('SELECT COUNT(*) AS count FROM notes').get() as { count: number };
+  fastify.setErrorHandler((err: FastifyError, request, reply) => {
+    fastify.log.error(
+      {
+        err,
+        request: {
+          method: request.method,
+          url: request.url,
+          query: request.query,
+          params: request.params
+        }
+      },
+      'Unhandled error occurred with within Fastify app'
+    );
 
-    return {
-      message: 'Database connected, server up!',
-      notes: result.count
-    };
+    reply.code(err.statusCode ?? 500);
+
+    let message = 'Internal Server Error';
+    if (err.statusCode && err.statusCode < 500) {
+      message = err.message;
+    }
+
+    return { message };
   });
-
-  return app;
 }

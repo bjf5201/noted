@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { FastifyInstance } from 'fastify';
-import { createDatabase } from 'noted/database.js';
+import { createDatabase } from '../src/plugins/external/database.js';
 import { buildApp } from 'noted/app.js';
 
 describe('GET /notes', () => {

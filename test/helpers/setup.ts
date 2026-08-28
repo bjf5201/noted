@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 
-import { createDatabase } from 'noted/database.js';
+import { createDatabase } from '../../src/plugins/external/database.js';
 import { buildApp } from 'noted/app.js';
 
 /**
