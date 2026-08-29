@@ -17,16 +17,16 @@ const databasePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS notes (
-      noteId INTEGER PRIMARY KEY AUTOINCREMENT
-      title TEXT NOT NULL
+      noteId INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
       content TEXT NOT NULL
-    )
+    );
 
     CREATE TABLE IF NOT EXISTS users (
       userId INTEGER PRIMARY KEY AUTOINCREMENT
       username TEXT NOT NULL
       password TEXT NOT NULL
-    )
+    );
   `);
 
   fastify.decorate('db', db);
