@@ -21,7 +21,8 @@ export const EnvSchema = Type.Object({
   ),
 
   // Security
-
+  COOKIE_SECRET: Type.String(),
+  COOKIE_NAME: Type.String(),
   SECRET_KEY_JWT: Type.String({ description: 'Secret key for JSON Web Token' }),
   RATE_LIMIT_MAX: Type.Number({
     default: 4,
