@@ -2,7 +2,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, includeIgnoreFile } from 'eslint/config';
 import js from '@eslint/js';
-import vitest from '@vitest/eslint-plugin';
 import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -67,15 +66,7 @@ export default defineConfig([
   },
 
   // Test files
-  {
-    extends: [vitest.configs.recommended],
-    files: ['**/*.{spec,test}.{ts,tsx}'],
-    languageOptions: {
-      globals: {
-        ...vitest.environments.env.globals
-      }
-    }
-  },
+  // TODO: see if something needs to be here for node:test?
 
   // Vanilla JS files
   {

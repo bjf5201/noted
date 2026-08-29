@@ -1,8 +1,14 @@
 import { join } from 'node:path';
 import { FastifyError, FastifyInstance, FastifyPluginOptions } from 'fastify';
-import fastifyAutoload from '@fastify/autoload';
+import fastifyAutoload, { type AutoloadPluginOptions } from '@fastify/autoload';
+
+export type AppOptions = {
+  skipOverride: boolean;
+  // Add custom options for app below here
+} & Partial<AutoloadPluginOptions>;
 
 export async function webApp(fastify: FastifyInstance, opts: FastifyPluginOptions) {
+  delete opts.skipOverride;
   // Register external plugins first, since they need to be available to application-specific plugins
   await fastify.register(fastifyAutoload, {
     dir: join(import.meta.dirname, 'plugins/external'),

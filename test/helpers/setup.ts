@@ -1,24 +1,40 @@
-import Fastify, { FastifyInstance, LightMyRequestResponse } from 'fastify';
+import assert from 'node:assert';
+import { TestContext } from 'node:test';
+import Fastify, { FastifyInstance, InjectOptions, LightMyRequestResponse } from 'fastify';
 import fp from 'fastify-plugin';
-import { afterEach, expect } from 'vitest';
 import { webApp } from 'noted/app.js';
+
+//type TestFastifyInstance = FastifyInstance & {
+//  config: {
+//    COOKIE_NAME: string;
+//    [key: string]: unknown;
+//  };
+//  login: typeof login;
+//};
 
 declare module 'fastify' {
   interface FastifyInstance {
+    config: {
+      COOKIE_NAME: string;
+      [key: string]: unknown;
+    };
+    injectWithLogin: typeof injectWithLogin;
     login: typeof login;
   }
 }
 
-export function config() {
+// Fill in this config with all config
+// needed for testing
+function config() {
   return {
-    skipOverride: true
+    skipOverride: true // Register application with fastify-plugin
   };
 }
 
 export function expectValidationError(res: LightMyRequestResponse, expectedMessage: string) {
-  expect(res.statusCode).toBe(400);
+  assert.strictEqual(res.statusCode, 400);
   const { message } = JSON.parse(res.payload);
-  expect(message).toBe(expectedMessage);
+  assert.strictEqual(message, expectedMessage);
 }
 
 async function login(this: FastifyInstance, username: string) {
@@ -27,23 +43,56 @@ async function login(this: FastifyInstance, username: string) {
     url: '/api/auth/login',
     payload: {
       username,
-      password: 'Password123$'
+      password: 'Spagh3tt1$isyummy$'
     }
   });
 
-  return res; //TODO: change to return a JWT cookie?
+  const cookie = res.cookies.find((c) => c.name === this.config.COOKIE_NAME);
+
+  if (!cookie) {
+    throw new Error('Failed to retrieve session cookie.');
+  }
+
+  return cookie.value;
 }
 
-export async function build() {
+async function injectWithLogin(this: FastifyInstance, username: string, opts: InjectOptions) {
+  const cookieValue = await this.login(username);
+
+  opts.cookies = {
+    ...opts.cookies,
+    [this.config.COOKIE_NAME]: cookieValue
+  };
+
+  return this.inject({
+    ...opts
+  });
+}
+
+// automatically build and tear down test instance
+async function buildTest(t?: TestContext) {
+  process.env.NODE_ENV = 'test';
+  process.env.LOG_LEVEL = 'silent';
+  process.env.JWT_SECRET = 'test-secret';
+  process.env.SALT = '4';
+  process.env.SQLITE_DATABASE = 'test';
+
   const app = Fastify();
 
   app.register(fp(webApp), config());
 
   await app.ready();
 
+  // Since this is after the app has started,
+  // cannot decorate instance with '.decorate'
   app.login = login;
+  app.injectWithLogin = injectWithLogin;
 
-  afterEach(() => app.close());
+  if (t) {
+    t.after(() => app.close());
+  }
 
   return app;
 }
+
+export { config, buildTest };
