@@ -10,7 +10,7 @@ declare module 'fastify' {
 }
 
 const databasePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-  const dbFile = process.env.NODE_ENV === 'development' ? ':memory:' : 'data/notes.db';
+  const dbFile = process.env.NODE_ENV === 'production' ? 'data/notes.db' : ':memory:';
   // TODO: ensure the URL to the dbFilename is correct using 'node:path' utils
   const dbFilename = process.env.DATBASE_FILE ?? dbFile;
   const db = new Database(dbFilename);
