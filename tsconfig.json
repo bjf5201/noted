@@ -3,7 +3,8 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "rootDir": "/",
     "strict": true,
     "declaration": false,
