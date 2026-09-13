@@ -23,8 +23,8 @@ const databasePlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
     );
 
     CREATE TABLE IF NOT EXISTS users (
-      userId INTEGER PRIMARY KEY AUTOINCREMENT
-      username TEXT NOT NULL
+      userId INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT NOT NULL,
       password TEXT NOT NULL
     );
   `);

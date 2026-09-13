@@ -38,7 +38,8 @@ export const EnvSchema = Type.Object({
       Type.Literal('warn'),
       Type.Literal('info'),
       Type.Literal('debug'),
-      Type.Literal('trace')
+      Type.Literal('trace'),
+      Type.Literal('silent')
     ],
     { default: 'info', description: 'Fastify log level' }
   ),
