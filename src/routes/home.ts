@@ -1,9 +1,21 @@
-import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
+import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  fastify.get('/', async () => {
-    return { message: 'Noted API reporting for duty!' };
-  });
+  fastify.get(
+    '/',
+    {
+      schema: {
+        response: {
+          200: Type.Object({
+            message: Type.String()
+          })
+        }
+      }
+    },
+    async () => {
+      return { message: 'Noted API reporting for duty!' };
+    }
+  );
 };
 
 export default plugin;
