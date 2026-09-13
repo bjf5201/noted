@@ -17,16 +17,6 @@ export const EnvSchema = Type.Object({
   DB_DATABASE: Type.String({ default: 'noted_backend' }),
   DB_POOL_MAX: Type.Number({ default: 10 }),
 
-  // Database - Test
-  DB_TEST_HOST: Type.Optional(
-    Type.String({ default: '0.0.0.0', description: 'Test database host' })
-  ),
-  DB_TEST_PORT: Type.Optional(Type.Number({ default: 5432, description: 'Test database port' })),
-  DB_TEST_USER: Type.Optional(Type.String({ default: 'postgres' })),
-  DB_TEST_PASSWORD: Type.Optional(Type.String()),
-  DB_TEST_DATABASE: Type.Optional(Type.String()),
-  DB_TEST_POOL_MAX: Type.Optional(Type.Number({ default: 10 })),
-
   // Server
   FASTIFY_HOST: Type.String({ default: '0.0.0.0' }),
   FASTIFY_PORT: Type.Number({ default: 3000 }),
@@ -45,12 +35,11 @@ export const EnvSchema = Type.Object({
   ),
 
   // Security
-  SECRET_KEY_JWT: Type.String({ description: 'Secret key for JSON Web Token' }),
   COOKIE_SECRET: Type.String(),
   COOKIE_NAME: Type.String({ default: 'session_id' }),
   RATE_LIMIT_MAX: Type.Number({
-    default: 4,
-    description: 'Maximum rate limit; increase if necessary'
+    default: 100,
+    description: 'Maximum rate limit; put it to 4 in .env.development file for tests'
   })
 });
 
