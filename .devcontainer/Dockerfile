@@ -7,6 +7,9 @@ ARG USERNAME=node
 # (e.g. tmux).
 ENV LANG=C.UTF-8
 
+# Set working directory
+WORKDIR /workspace
+
 # Install packages commonly required for native Node modules.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends \
@@ -18,6 +21,10 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
         python3 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Add node user to docker group for socket access
+RUN groupadd -g 999 docker || true && \
+    usermod -aG docker ${USERNAME} || true
 
 # Install and enable Corepack to use the
 # version of pnpm specified by the project

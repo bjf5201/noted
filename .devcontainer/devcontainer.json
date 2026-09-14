@@ -1,12 +1,13 @@
 {
   "name": "Fastify TypeScript Dev Environment",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": ".."
-  },
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "runServices": ["app", "postgres"],
+  "waitFor": "onCreateCommand",
   "remoteUser": "node",
-  "forwardPorts": [3000],
+  "forwardPorts": [3000, 5432],
   "postCreateCommand": "pnpm install --frozen-lockfile",
+  "workspaceFolder": "/workspace",
   "remoteEnv": {
     "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
   },
