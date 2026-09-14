@@ -24,6 +24,8 @@ export async function webApp(fastify: FastifyInstance, opts: FastifyPluginOption
   // Loads routes (defined as plugins in 'src/routes')
   await fastify.register(fastifyAutoload, {
     dir: join(import.meta.dirname, 'routes'),
+    autoHooks: true,
+    cascadeHooks: true,
     options: { ...opts }
   });
 
@@ -38,7 +40,7 @@ export async function webApp(fastify: FastifyInstance, opts: FastifyPluginOption
           params: request.params
         }
       },
-      'Unhandled error occurred with within Fastify app'
+      'Unhandled error occurred within Fastify app'
     );
 
     reply.code(err.statusCode ?? 500);
