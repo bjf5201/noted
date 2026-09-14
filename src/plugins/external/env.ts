@@ -1,59 +1,96 @@
-import fp from 'fastify-plugin';
-import envSchema from 'env-schema';
-import { Static, Type } from 'typebox';
-import { FastifyInstance } from 'fastify';
+import env from '@fastify/env';
 
-export const EnvSchema = Type.Object({
-  NODE_ENV: Type.Union(
-    [Type.Literal('production'), Type.Literal('development'), Type.Literal('test')],
-    { default: 'production', description: 'Node environment' }
-  ),
-
-  // Database
-  DB_HOST: Type.String({ default: '0.0.0.0' }),
-  DB_PORT: Type.Number({ default: 5432 }),
-  DB_USER: Type.String({ default: 'postgres' }),
-  DB_PASSWORD: Type.String(),
-  DB_DATABASE: Type.String({ default: 'noted_backend' }),
-  DB_POOL_MAX: Type.Number({ default: 10 }),
-
-  // Server
-  FASTIFY_HOST: Type.String({ default: '0.0.0.0' }),
-  FASTIFY_PORT: Type.Number({ default: 3000 }),
-  FASTIFY_CLOSE_GRACE_DELAY: Type.Number({ default: 500 }),
-  LOG_LEVEL: Type.Union(
-    [
-      Type.Literal('fatal'),
-      Type.Literal('error'),
-      Type.Literal('warn'),
-      Type.Literal('info'),
-      Type.Literal('debug'),
-      Type.Literal('trace'),
-      Type.Literal('silent')
-    ],
-    { default: 'info', description: 'Fastify log level' }
-  ),
-
-  // Security
-  COOKIE_SECRET: Type.String(),
-  COOKIE_NAME: Type.String({ default: 'session_id' }),
-  RATE_LIMIT_MAX: Type.Number({
-    default: 100,
-    description: 'Maximum rate limit; put it to 4 in .env.development file for tests'
-  })
-});
-
-export type TEnvConfig = Static<typeof EnvSchema>;
-
-async function configPlugin(fastify: FastifyInstance) {
-  const config = envSchema<TEnvConfig>({
-    schema: EnvSchema,
-    dotenv: true // will read .env in root folder
-  });
-
-  fastify.decorate('config', config);
+declare module 'fastify' {
+  export interface FastifyInstance {
+    config: {
+      FASTIFY_PORT: number;
+      DB_HOST: string;
+      DB_PORT: string;
+      DB_USER: string;
+      DB_PASSWORD: string;
+      DB_DATABASE: string;
+      COOKIE_SECRET: string;
+      COOKIE_NAME: string;
+      COOKIE_SECURED: boolean;
+      RATE_LIMIT_MAX: string;
+    };
+  }
 }
 
-export default fp(configPlugin, {
-  name: 'config'
-});
+const schema = {
+  type: 'object',
+  required: [
+    'DB_HOST',
+    'DB_PORT',
+    'DB_USER',
+    'DB_PASSWORD',
+    'DB_DATABASE',
+    'COOKIE_SECRET',
+    'COOKIE_NAME',
+    'COOKIE_SECURED'
+  ],
+  properties: {
+    // Database
+    MYSQL_HOST: {
+      type: 'string',
+      default: 'localhost'
+    },
+    MYSQL_PORT: {
+      type: 'number',
+      default: 3306
+    },
+    MYSQL_USER: {
+      type: 'string'
+    },
+    MYSQL_PASSWORD: {
+      type: 'string'
+    },
+    MYSQL_DATABASE: {
+      type: 'string'
+    },
+
+    // Security
+    COOKIE_SECRET: {
+      type: 'string'
+    },
+    COOKIE_NAME: {
+      type: 'string'
+    },
+    COOKIE_SECURED: {
+      type: 'boolean',
+      default: true
+    },
+    RATE_LIMIT_MAX: {
+      type: 'number',
+      default: 100 // Put it to 4 in your .env file for tests
+    }
+  }
+};
+
+export const autoConfig = {
+  // Decorate Fastify instance with 'config' key
+  // Optional, default: 'config'
+  confKey: 'config',
+
+  // Schema to validate
+  // TODO: Use typebox here? Or just leave it?
+  schema,
+
+  // Needed to read proper .env file -- TODO: find better way to do this
+  dotenv: {
+    path: `${import.meta.dirname}/../../../.env.development`,
+    debug: true
+  },
+
+  // Source for configuration data
+  // Optional, default: process.env
+  data: process.env
+};
+
+/**
+ * This plugin helps check environment variables
+ *
+ * @see {@link https://github.com/fastify/fastify-env}
+ */
+
+export default env;
