@@ -22,6 +22,7 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
 # Install and enable Corepack to use the
 # version of pnpm specified by the project
 RUN npm install -g corepack -y
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable
 
 # Create PNPM_HOME and add pnpm to PATH
