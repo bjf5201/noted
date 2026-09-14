@@ -3,12 +3,13 @@ import env from '@fastify/env';
 declare module 'fastify' {
   export interface FastifyInstance {
     config: {
+      FASTIFY_HOST: string;
       FASTIFY_PORT: number;
-      DB_HOST: string;
-      DB_PORT: string;
-      DB_USER: string;
-      DB_PASSWORD: string;
-      DB_DATABASE: string;
+      POSTGRES_HOST: string;
+      POSTGRES_PORT: string;
+      POSTGRES_USER: string;
+      POSTGRES_PASSWORD: string;
+      POSTGRES_DATABASE: string;
       COOKIE_SECRET: string;
       COOKIE_NAME: string;
       COOKIE_SECURED: boolean;
@@ -20,32 +21,32 @@ declare module 'fastify' {
 const schema = {
   type: 'object',
   required: [
-    'DB_HOST',
-    'DB_PORT',
-    'DB_USER',
-    'DB_PASSWORD',
-    'DB_DATABASE',
+    'POSTGRES_HOST',
+    'POSTGRES_PORT',
+    'POSTGRES_USER',
+    'POSTGRES_PASSWORD',
+    'POSTGRES_DATABASE',
     'COOKIE_SECRET',
     'COOKIE_NAME',
     'COOKIE_SECURED'
   ],
   properties: {
     // Database
-    MYSQL_HOST: {
+    POSTGRES_HOST: {
       type: 'string',
       default: 'localhost'
     },
-    MYSQL_PORT: {
+    POSTGRES_PORT: {
       type: 'number',
       default: 3306
     },
-    MYSQL_USER: {
+    POSTGRES_USER: {
       type: 'string'
     },
-    MYSQL_PASSWORD: {
+    POSTGRES_PASSWORD: {
       type: 'string'
     },
-    MYSQL_DATABASE: {
+    POSTGRES_DATABASE: {
       type: 'string'
     },
 
