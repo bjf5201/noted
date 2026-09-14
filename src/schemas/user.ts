@@ -1,10 +1,17 @@
 import { type Static, Type } from 'typebox';
 import { ErrorResponse } from './shared.js';
 
+const passwordPattern = '^(?=.*?[A-Z](?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-_]).*$';
+
+const PasswordSchema = Type.String({
+  pattern: passwordPattern,
+  minLength: 8
+});
+
 export const UserSchema = {
   username: Type.String({ minLength: 6, description: 'User username' }),
   email: Type.String({ format: 'email', description: 'User email address' }),
-  password: Type.String({ minLength: 6, description: 'User password' }),
+  password: PasswordSchema,
   dateOfCreation: Type.String({
     format: 'date',
     description: 'Date of user registration/creation'
@@ -43,7 +50,6 @@ export const createUserSchema = {
 };
 
 // GET /users
-
 export const getAllUsersSchema = {
   tags: ['user'],
   summary: 'Get all users',
@@ -59,7 +65,7 @@ export const getUserSchema = {
   summary: 'Get user by id',
   description: 'Get a user by ID',
   params: Type.Object({
-    userId: Type.Integer({ description: 'User ID' })
+    userId: Type.Integer({ minimum: 1, description: 'User ID' })
   }),
   response: {
     200: UserResponse,
@@ -68,44 +74,16 @@ export const getUserSchema = {
   }
 };
 
-export const updateUserSchema = {
-  tags: ['user'],
-  summary: 'Update user by id',
-  description: 'Update a user by ID',
-  params: Type.Object({
-    id: Type.String({ format: 'uuid', description: 'User ID' })
-  }),
-  body: Type.Partial(
-    Type.Omit(UserBodySchema, ['id', 'password', 'dateOfCreation', 'dateOfLastAccess'])
-  ),
-  response: {
-    200: UserResponse,
-    400: ErrorResponse,
-    404: ErrorResponse
-  }
-};
-
-export const deleteUserSchema = {
-  tags: ['user'],
-  summary: 'Delete user by id',
-  description: 'Delete a user by ID',
-  params: Type.Object({
-    id: Type.String({ format: 'uuid', description: 'User ID' })
-  }),
-  response: {
-    204: {
-      description: 'No content'
-    },
-    404: ErrorResponse
-  }
-};
+export const UpdateCredentialsSchema = Type.Object({
+  currentPassword: PasswordSchema,
+  newPassword: PasswordSchema
+});
 
 export type TUser = Static<typeof UserBodySchema>;
 export type TUserParams = Static<typeof getUserSchema.params>;
 export type TUserResponseSchema = Static<typeof UserResponse>;
 export type TCreateUserBody = Static<typeof createUserSchema.body>;
-export type TUpdateUserBody = Static<typeof updateUserSchema.body>;
+export type TUpdateCredentials = Static<typeof UpdateCredentialsSchema>;
 
 export type TCreateUserDto = TCreateUserBody;
-export type TUpdateUserDto = TUpdateUserBody;
 export type TUserParamsDto = TUserParams;
