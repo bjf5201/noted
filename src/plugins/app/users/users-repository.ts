@@ -1,5 +1,8 @@
-import type { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
+import { eq } from 'drizzle-orm';
+import { roles, userRoles, users } from 'noted/database/schema.js';
+import { Auth } from 'noted/schemas/auth.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -11,35 +14,44 @@ export function createUsersRepository(fastify: FastifyInstance) {
   const db = fastify.db;
 
   return {
-    /**
-     * @description Creates single user
-     */
-    create(username: string, password: string) {
-      const result = db
-        .prepare(`INSERT INTO users (username, password) VALUES (?, ?)`)
-        .run(username, password);
+    async findByEmail(email: string) {
+      const user = await db
+        .select({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          password: users.password
+        })
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
 
-      return db
-        .prepare(`SELECT userId, username FROM users WHERE userId = ?`)
-        .get(result.lastInsertRowid);
+      return user[0] as (Auth & { password: string }) | undefined;
     },
 
-    /**
-     * @description Gets a user by id
-     */
-    findById(userId: number) {
-      return db.prepare(`SELECT userId, username FROM users where userId = ?`).get(userId);
+    async updatePassword(email: string, hashedPassword: string) {
+      return db.update(users).set({ password: hashedPassword }).where(eq(users.email, email));
+    },
+
+    async findUserRolesByEmail(email: string) {
+      const result = await db
+        .select({ name: roles.name })
+        .from(roles)
+        .innerJoin(userRoles, eq(userRoles.roleId, roles.id))
+        .innerJoin(users, eq(userRoles.userId, users.id))
+        .where(eq(users.email, email));
+
+      return result;
     }
   };
 }
 
-export default fp(
-  async function (fastify: FastifyInstance) {
-    const repo = createUsersRepository(fastify);
-    fastify.decorate('usersRepository', repo);
-  },
-  {
-    name: 'users-repository',
-    dependencies: ['database']
-  }
-);
+const usersRepoPlugin: FastifyPluginAsync = async (fastify) => {
+  const repo = createUsersRepository(fastify);
+  fastify.decorate('usersRepository', repo);
+};
+
+export default fp(usersRepoPlugin, {
+  name: 'users-repository',
+  dependencies: ['drizzle']
+});
