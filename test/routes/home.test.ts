@@ -2,11 +2,11 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { buildTest } from 'noted/#/helpers/setup.js';
 
-describe('App', () => {
+describe('Home', () => {
   it('GET / returns API welcome message', async (t) => {
     const app = await buildTest(t);
     const response = await app.inject({
-      url: '/' //TODO: Change to `url: '/api/v1'
+      url: '/'
     });
 
     assert.deepStrictEqual(JSON.parse(response.payload), {
