@@ -21,14 +21,28 @@ async function createDatabase() {
     await createDB(connection);
     console.log(`Database ${process.env.POSTGRES_DATABASE} has been created successfully.`);
   } catch (error) {
-    console.error('Error creating database:', error);
+    if (error instanceof Error) {
+      console.error(error.message);
+    } else {
+      console.error('An unexpected error occurred:', error);
+    }
+    process.exitCode = 1;
   } finally {
     await connection.end();
   }
 }
 
 async function createDB(connection: Client) {
+  const result = await connection.query('SELECT 1 FROM pg_database WHERE datname = $1', [
+    process.env.POSTGRES_DATABASE
+  ]);
+
+  if (result.rowCount !== 0) {
+    throw new Error(`Database "${process.env.POSTGRES_DATABASE}" already exists.`);
+  }
+
   await connection.query(`CREATE DATABASE "${process.env.POSTGRES_DATABASE}"`);
+
   console.log(`Database ${process.env.POSTGRES_DATABASE} created or already exists.`);
 }
 
