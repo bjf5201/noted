@@ -28,5 +28,6 @@ const drizzlePlugin: FastifyPluginAsync = async (fastify) => {
 };
 
 export default fp(drizzlePlugin, {
-  name: 'drizzle'
+  name: 'drizzle',
+  dependencies: ['env']
 });

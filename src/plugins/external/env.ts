@@ -1,3 +1,4 @@
+import fp from 'fastify-plugin';
 import env from '@fastify/env';
 
 declare module 'fastify' {
@@ -14,6 +15,7 @@ declare module 'fastify' {
       COOKIE_NAME: string;
       COOKIE_SECURED: boolean;
       RATE_LIMIT_MAX: string;
+      [key: string]: unknown;
     };
   }
 }
@@ -34,17 +36,19 @@ const schema = {
     // Database
     POSTGRES_HOST: {
       type: 'string',
-      default: 'localhost'
+      default: 'postgres'
     },
     POSTGRES_PORT: {
       type: 'number',
       default: 3306
     },
     POSTGRES_USER: {
-      type: 'string'
+      type: 'string',
+      default: 'postgres'
     },
     POSTGRES_PASSWORD: {
-      type: 'string'
+      type: 'string',
+      default: 'postgres'
     },
     POSTGRES_DATABASE: {
       type: 'string'
@@ -55,7 +59,8 @@ const schema = {
       type: 'string'
     },
     COOKIE_NAME: {
-      type: 'string'
+      type: 'string',
+      default: 'session_id'
     },
     COOKIE_SECURED: {
       type: 'boolean',
@@ -77,11 +82,8 @@ export const autoConfig = {
   // TODO: Use typebox here? Or just leave it?
   schema,
 
-  // Needed to read proper .env file -- TODO: find better way to do this
-  dotenv: {
-    path: `${import.meta.dirname}/../../../.env.development`,
-    debug: true
-  },
+  // Needed to read .env file in root folder
+  dotenv: true,
 
   // Source for configuration data
   // Optional, default: process.env
@@ -94,4 +96,6 @@ export const autoConfig = {
  * @see {@link https://github.com/fastify/fastify-env}
  */
 
-export default env;
+export default fp(env, {
+  name: 'env'
+});
