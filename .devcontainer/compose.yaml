@@ -2,20 +2,22 @@ services:
   app:
     build:
       context: .
-      dockerfile: .devcontainer/Dockerfile
+      dockerfile: Dockerfile
     container_name: noted-app
     command: sh -c "chown -R node:node /workspace/node_modules && sleep infinity"
+    env_file:
+      - ../.env
     environment:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DATABASE: ${POSTGRES_DATABASE:-noted}
+      POSTGRES_DATABASE: ${POSTGRES_DATABASE:-noted_dev}
       GITHUB_TOKEN: ${GITHUB_TOKEN}
     ports:
       - "3000:3000"
     volumes:
-      - .:/workspace
+      - ..:/workspace:cached
       - node_modules:/workspace/node_modules
       - pnpm_store:/home/node/.local/share/pnpm
     networks:
@@ -30,7 +32,7 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DATABASE:-noted}
+      POSTGRES_DB: ${POSTGRES_DATABASE:-noted_dev}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
