@@ -10,6 +10,9 @@ ENV LANG=C.UTF-8
 # Set working directory
 WORKDIR /workspace
 
+RUN mkdir -p /workspace/node_modules \
+    && chown ${USERNAME}:${USERNAME} /workspace/node_modules
+
 # Install packages commonly required for native Node modules.
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
     apt-get install -y --no-install-recommends \

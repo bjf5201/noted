@@ -1,6 +1,6 @@
 {
   "name": "Fastify TypeScript Dev Environment",
-  "dockerComposeFile": "../docker-compose.yml",
+  "dockerComposeFile": "../compose.yaml",
   "service": "app",
   "runServices": ["app", "postgres"],
   "waitFor": "onCreateCommand",

@@ -1,15 +1,13 @@
-version: "3.8"
-
 services:
   app:
     build:
       context: .
       dockerfile: .devcontainer/Dockerfile
     container_name: noted-app
-    command: sleep infinity
+    command: sh -c "chown -R node:node /workspace/node_modules && sleep infinity"
     environment:
-      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DATABASE: ${POSTGRES_DATABASE:-noted}
@@ -18,7 +16,7 @@ services:
       - "3000:3000"
     volumes:
       - .:/workspace
-      - /workspace/node_modules
+      - node_modules:/workspace/node_modules
       - pnpm_store:/home/node/.local/share/pnpm
     networks:
       - noted-network
@@ -27,18 +25,18 @@ services:
         condition: service_healthy
 
   postgres:
-    image: postgres:17-alpine
+    image: postgres:latest
     container_name: noted-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DATABASE:-noted}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -50,5 +48,6 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
+  node_modules:
   pnpm_store:
+  postgres_data:
