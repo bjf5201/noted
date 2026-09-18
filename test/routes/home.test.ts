@@ -6,7 +6,6 @@ describe('App', () => {
   it('GET / returns API welcome message', async (t) => {
     const app = await buildTest(t);
     const response = await app.inject({
-      method: 'GET',
       url: '/' //TODO: Change to `url: '/api/v1'
     });
 
