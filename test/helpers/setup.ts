@@ -14,10 +14,6 @@ import { webApp } from 'noted/app.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
-    config: {
-      COOKIE_NAME: string;
-      [key: string]: unknown;
-    };
     injectWithLogin: typeof injectWithLogin;
     login: typeof login;
   }
@@ -25,7 +21,7 @@ declare module 'fastify' {
 
 // Fill in this config with all config
 // needed for testing
-function config() {
+export function config() {
   return {
     skipOverride: true // Register application with fastify-plugin
   };
@@ -37,13 +33,13 @@ export function expectValidationError(res: LightMyRequestResponse, expectedMessa
   assert.strictEqual(message, expectedMessage);
 }
 
-async function login(this: FastifyInstance, username: string) {
+async function login(this: FastifyInstance, email: string) {
   const res = await this.inject({
     method: 'POST',
     url: '/api/auth/login',
     payload: {
-      username,
-      password: 'Spagh3tt1$isyummy$'
+      email,
+      password: 'Password123$'
     }
   });
 
@@ -56,8 +52,8 @@ async function login(this: FastifyInstance, username: string) {
   return cookie.value;
 }
 
-async function injectWithLogin(this: FastifyInstance, username: string, opts: InjectOptions) {
-  const cookieValue = await this.login(username);
+async function injectWithLogin(this: FastifyInstance, email: string, opts: InjectOptions) {
+  const cookieValue = await this.login(email);
 
   opts.cookies = {
     ...opts.cookies,
@@ -70,13 +66,7 @@ async function injectWithLogin(this: FastifyInstance, username: string, opts: In
 }
 
 // automatically build and tear down test instance
-async function buildTest(t?: TestContext) {
-  process.env.NODE_ENV = 'test';
-  process.env.LOG_LEVEL = 'silent';
-  process.env.JWT_SECRET = 'test-secret';
-  process.env.SALT = '4';
-  process.env.SQLITE_DATABASE = 'test';
-
+export async function buildTest(t?: TestContext) {
   const app = Fastify();
 
   app.register(fp(webApp), config());
@@ -94,5 +84,3 @@ async function buildTest(t?: TestContext) {
 
   return app;
 }
-
-export { config, buildTest };
