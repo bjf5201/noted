@@ -1,0 +1,5 @@
+.git
+.DS_STORE
+pnpm-debug.log*
+coverage/
+
