@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 
 export default async function (fastify: FastifyInstance) {
   fastify.addHook('onRequest', async (request, reply) => {
-    if (request.url.startsWith('/api/auth/login')) {
+    if (request.url.startsWith('/api/v1/auth/login')) {
       return;
     }
 

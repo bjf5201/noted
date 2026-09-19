@@ -7,7 +7,7 @@ describe('API root', () => {
     const app = await buildTest(t);
 
     const response = await app.inject({
-      url: '/api' // TODO: change to /api/v1
+      url: '/api/v1'
     });
 
     assert.deepStrictEqual(JSON.parse(response.payload), {
@@ -21,7 +21,7 @@ describe('API root', () => {
     const app = await buildTest(t);
 
     const response = await app.injectWithLogin('basic@example.com', {
-      url: '/api'
+      url: '/api/v1'
     });
 
     assert.equal(response.statusCode, 200);

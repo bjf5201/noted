@@ -36,7 +36,7 @@ export function expectValidationError(res: LightMyRequestResponse, expectedMessa
 async function login(this: FastifyInstance, email: string) {
   const res = await this.inject({
     method: 'POST',
-    url: '/api/auth/login',
+    url: '/api/v1/auth/login',
     payload: {
       email,
       password: 'Password123$'
