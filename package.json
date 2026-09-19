@@ -41,12 +41,16 @@
     "format:check": "prettier \"**/*\" --check --ignore-unknown --cache",
     "format": "prettier \"**/*\" --write --ignore-unknown --cache",
     "check": "pnpm run typecheck && pnpm run lint && pnpm run format",
-    "test": "tsx --env-file=.env --env-file=.env.local --test **/*.test.ts",
+    "test": "POSTGRES_DATABASE=noted_test tsx --env-file=.env --env-file=.env.local --test **/*.test.ts",
     "build": "tsc -p tsconfig.build.json",
     "db:create": "tsx --env-file=.env ./scripts/create-database.ts",
+    "db:create:t": "POSTGRES_DATABASE=noted_test pnpm run db:create",
     "db:drop": "tsx --env-file=.env ./scripts/drop-database.ts",
+    "db:drop:t": "POSTGRES_DATABASE=noted_test pnpm run db:drop",
     "db:migrate": "tsx --env-file=.env ./scripts/migrate-database.ts",
-    "db:seed": "tsx --env-file=.env ./scripts/seed-database.ts"
+    "db:migrate:t": "POSTGRES_DATABASE=noted_test pnpm run db:migrate",
+    "db:seed": "tsx --env-file=.env ./scripts/seed-database.ts",
+    "db:seed:t": "POSTGRES_DATABASE=noted_test pnpm run db:seed"
   },
   "dependencies": {
     "@fastify/autoload": "^6.5.0",
