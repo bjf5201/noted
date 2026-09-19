@@ -4,6 +4,10 @@ import { eq } from 'drizzle-orm';
 import { roles, userRoles, users } from 'noted/database/schema.js';
 import { Auth } from 'noted/schemas/auth.js';
 
+type Database = FastifyInstance['db'];
+type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
+type DatabaseExecutor = Database | Transaction;
+
 declare module 'fastify' {
   interface FastifyInstance {
     usersRepository: ReturnType<typeof createUsersRepository>;
@@ -14,8 +18,8 @@ export function createUsersRepository(fastify: FastifyInstance) {
   const db = fastify.db;
 
   return {
-    async findByEmail(email: string) {
-      const user = await db
+    async findByEmail(email: string, executor: DatabaseExecutor = db) {
+      const [user] = await executor
         .select({
           id: users.id,
           username: users.username,
@@ -26,15 +30,22 @@ export function createUsersRepository(fastify: FastifyInstance) {
         .where(eq(users.email, email))
         .limit(1);
 
-      return user[0] as (Auth & { password: string }) | undefined;
+      return user as (Auth & { password: string }) | undefined;
     },
 
-    async updatePassword(email: string, hashedPassword: string) {
-      return db.update(users).set({ password: hashedPassword }).where(eq(users.email, email));
+    async updatePassword(
+      email: string,
+      hashedPassword: string,
+      executor: DatabaseExecutor = db
+    ) {
+      return executor
+        .update(users)
+        .set({ password: hashedPassword })
+        .where(eq(users.email, email));
     },
 
-    async findUserRolesByEmail(email: string) {
-      const result = await db
+    async findUserRolesByEmail(email: string, executor: DatabaseExecutor = db) {
+      const result = await executor
         .select({ name: roles.name })
         .from(roles)
         .innerJoin(userRoles, eq(userRoles.roleId, roles.id))
