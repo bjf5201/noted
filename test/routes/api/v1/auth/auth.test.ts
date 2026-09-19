@@ -7,9 +7,12 @@ describe('Auth API', () => {
     it('Unwinds and partial work if password checking fails for reason other than incorrect password', async (t) => {
       const app = await buildTest(t);
 
-      const { mock: mockCompare } = t.mock.method(app.passwordManager, 'compare');
+      const { mock: mockCompare } = t.mock.method(
+        app.passwordManager,
+        'compare'
+      );
       mockCompare.mockImplementationOnce((_value: string, _hash: string) => {
-        throw new Error('I blew up. ');
+        throw new Error('I blew up.');
       });
 
       const { mock: mockLogError } = t.mock.method(app.log, 'error');
