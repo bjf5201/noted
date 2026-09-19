@@ -17,7 +17,7 @@ describe('API root', () => {
     });
   });
 
-  it.skip('can access the API root when user is properly logged in', async (t) => {
+  it('can access the API root when user is properly logged in', async (t) => {
     const app = await buildTest(t);
 
     const response = await app.injectWithLogin('basic@example.com', {
