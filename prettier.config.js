@@ -2,12 +2,13 @@ const prettierConfig = {
   arrowParens: 'always',
   bracketSpacing: true,
   endOfLine: 'lf',
-  printWidth: 100,
+  printWidth: 80,
   proseWrap: 'preserve',
   singleQuote: true,
   tabWidth: 2,
   trailingComma: 'none',
   useTabs: false,
+  objectWrap: 'preserve',
   overrides: [
     {
       files: '**/*.{json,jscon5,jsonc}',
