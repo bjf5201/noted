@@ -11,83 +11,63 @@
 - Lint check only: `pnpm run lint:check`
 - Format: `pnpm run format`  (Prettier)
 - Format check: `pnpm run format:check`
-- Tests (vitest): `pnpm run test`
-- Watch tests: `pnpm run test:watch`
+# Copilot instructions for noted
 
-Run a single test file:
-- `pnpm exec vitest test/note/note.route.test.ts`
+## Quick commands
 
-Run a single test by name/pattern:
-- `pnpm exec vitest -t "returns empty array when no notes exist"`
-- or: `pnpm run test -- -t "pattern"`
+- Install dependencies: `pnpm install`
+- Development server: `pnpm run dev` (`tsx watch`, loads `.env.development.local`)
+- Start server once: `pnpm run start`
+- Type-check: `pnpm run typecheck`
+- Lint check: `pnpm run lint:check`
+- Lint and fix: `pnpm run lint`
+- Format check: `pnpm run format:check`
+- Format and fix: `pnpm run format`
+- Run all tests: `pnpm run test`
+- Build: `pnpm run build` (uses `tsconfig.build.json`)
+- Run the full local check: `pnpm run check`
 
-Notes about CI: `.github/workflows/ci.yaml` runs commitlint, format, lint, typecheck, tests, build. The repo uses `pnpm` (`packageManager`) and pins a Node engine in `package.json`.
+Tests use Node's built-in `node:test` runner through `tsx`, not Vitest. Run one file with, for example, `pnpm exec tsx --env-file=.env --env-file=.env.local --test test/routes/home.test.ts`. Run a test name with Node's `--test-name-pattern` option.
 
-## 2) High-level architecture (big picture)
+Database commands use Drizzle Kit and PostgreSQL. The usual migration flow is `pnpm run db:create`, `pnpm run db:migrate`, and `pnpm run db:seed`; use `pnpm run db:drop` only when intentionally removing the configured database. Environment variables are loaded from `.env` by database scripts and from `.env` **and** `.env.local` by the server.
 
-- Entry: `src/index.ts` — creates a Better-SQLite3 DB (`data/notes.db`) and starts the Fastify server.
-- App composition: `src/app.ts` — builds the Fastify instance, registers routes, and exposes a health root endpoint (`/`).
-- Database layer: `src/database.ts` — thin wrapper around `better-sqlite3` that ensures the notes table exists. Tests use `createDatabase(':memory:')` for ephemeral DBs.
-- Domain:
-  - `src/note/*` — split into schema (TypeBox schemas), repository (SQL queries using `better-sqlite3`), controller (Fastify handlers), and routes (Fastify plugins). Routes are registered under prefix `/notes`.
-  - `src/
-- Types & validation: TypeBox schemas in `note.schema.ts` are used as Fastify route schemas with the TypeBox type provider (`@fastify/type-provider-typebox`).
-- Tests: `test/*.test.ts` spin up the app with an in-memory DB and use `app.inject` for HTTP-like requests (no external server required).
-- Build: `tsc` (`tsconfig.build.json`) outputs to `dist`; dev uses `tsx` to run TS directly.
+The package requires Node `24.18.0` and uses pnpm. CI runs commitlint, format checking, lint, typecheck, tests, and build.
 
-## 3) Key repository conventions and patterns
+## Architecture
 
-- Import paths use the package export map (`package.json` `"exports"`): modules import using `'noted/...'` (e.g., `'noted/app.js'`). Keep exports in sync if files move.
-- Database creation is idempotent: `createDatabase` ensures the notes table exists on startup. Tests must use `':memory:'` to avoid touching `data/notes.db`.
-- Tests use `app.inject` and close the Fastify instance in `afterEach` to avoid cross-test interference.
-- Native dependency builds: `pnpm-workspace.yaml` contains `allowBuilds` entries (`better-sqlite3`, `esbuild`). Builds may require native toolchain on CI / local machine.
-- Node & pnpm versions: `package.json` sets the Node engine and `packageManager`; use matching versions in CI/devcontainer to avoid environment mismatches.
+- `src/server.ts` is the standalone executable. It creates the Fastify instance, configures logging/timeouts/AJV, registers `webApp`, handles graceful shutdown, and listens on port `3000`.
+- `src/app.ts` is the composition root. It autoloads plugins in this order: `src/plugins/external`, `src/plugins/app`, then `src/routes`. Routes are loaded with `autoHooks` and `cascadeHooks` enabled.
+- Every autoloaded module should export a default Fastify plugin. Use `fastify-plugin` for plugins that decorate the Fastify instance or declare dependencies. Use `autoConfig` when a plugin needs autoload options.
+- `src/plugins/external` contains infrastructure integrations: environment validation, Drizzle/Postgres, sessions/cookies, Swagger, and sensible HTTP helpers.
+- `src/plugins/app` contains application services and instance/request decorations: authorization, password hashing/comparison, and the users repository.
+- `src/routes` contains HTTP route plugins. `src/routes/home.ts` serves `/`; `src/routes/api/index.ts` serves `/api`; nested folders map to nested route prefixes. `src/routes/api/autohooks.ts` protects API routes except `/api/auth/login`.
+- `src/database/schema.ts` is the Drizzle PostgreSQL schema. Migrations live in `src/database/migrations` and are generated/configured by `drizzle.config.js`.
 
-## 4) Domain/API Info
+## Conventions
 
-### Note
+- Preserve the package export map when adding or moving modules. Internal imports use the `noted/...` package aliases, usually with explicit `.js` extensions, such as `noted/app.js` or `noted/database/schema.js`.
+- Use Fastify decorators for shared services and repositories. Add matching declaration merging in the plugin that owns the decoration, and declare plugin dependencies in `fastify-plugin` metadata when required.
+- Keep plugin ordering and dependency names correct. External plugins must be available before app plugins, and app services must be registered before routes consume them. The Drizzle plugin depends on `env`; the users repository depends on `drizzle`.
+- Use TypeBox schemas with `@fastify/type-provider-typebox` for route validation and OpenAPI metadata. Put reusable DTOs and response schemas in `src/schemas`, and attach route-specific schemas through the route's `schema` option.
+- Do not rely on TypeScript types for runtime request validation. Fastify schemas validate requests and responses; handler generics provide compile-time types.
+- Keep authentication and authorization behavior in plugins/hooks. Sessions expose `request.session.user`; authorization helpers are decorated on requests. Avoid duplicating access checks inside individual handlers when a route hook is the appropriate boundary.
+- Keep database access in repositories or database-focused modules rather than embedding Drizzle queries throughout route handlers. Use the decorated `fastify.db` connection and close external resources with Fastify lifecycle hooks such as `onClose`.
+- Tests use `buildTest()` from `test/helpers/setup.ts`, register `webApp` with `skipOverride: true`, and exercise HTTP behavior through `app.inject`. Close the app with the test context or in teardown. Use the login helpers when a test needs the configured session cookie.
+- Prefer focused tests alongside the route or plugin behavior being changed. Existing tests are currently concentrated in `test/routes`; some user tests are skipped while that API is incomplete.
 
-The Note route implementation is as follows:
+## Important files
 
-App (`src/app.ts`) -> Note Route (`src/note/note.route.ts`) -> Note Controller (`src/note/note.controller.ts`) -> Note Repository (`src/note/note.route.ts`) -> Database (`src/database.ts`)
+- `src/app.ts` — plugin and route composition, global error handling
+- `src/server.ts` — production/development process entrypoint and Fastify runtime options
+- `src/plugins/external/env.ts` — required environment variables and defaults
+- `src/plugins/external/drizzle.ts` — PostgreSQL connection and `fastify.db` decoration
+- `src/plugins/external/session.ts` — cookie/session configuration and `request.session.user` typing
+- `src/plugins/app/users/users-repository.ts` — user queries and `fastify.usersRepository`
+- `src/routes/api/autohooks.ts` — API authentication gate
+- `src/routes/api/user/index.ts` — user route schemas and handlers
+- `src/schemas/*.ts` — TypeBox request/response schemas and shared types
+- `src/database/schema.ts` and `src/database/migrations/*` — database model and migrations
+- `test/helpers/setup.ts` — test app factory and authenticated injection helpers
+- `package.json`, `drizzle.config.js`, `tsconfig*.json` — scripts, database tooling, and TypeScript configuration
 
-Additionally, the Note Route utilizes the Note Schema (`src/note/note.schema.ts`) to verify the shape of requests and responses, as appropriate.
-
-- `src/note/note.schema.ts`: Note Schema utilizes TypeBox (`typebox`) with the Fastify TypeBox type provider (`@fastify/type-provider-typebox`)
-- `src/note/note.repository.ts`: The repository API utilizes `createNotesRepository` which returns a plain object with methods: `listAll()`, `listById(noteId)`, `create(title, content)`. Keep SQL and returned shapes simple JSON-friendly objects (`noteId`, `title`, `content`).
-- `src/note/note.controller.ts`: Controllers return Fastify responses and rely on route schemas for validation. Request bodies are cast in code; do not assume runtime typing without schema validation.
-- `src/note/note.route.ts`: Routes export a Fastify plugin factory (function `notesRoutes(repo)`) which is then registered in `app.ts` with a prefix.
-
-### User
-
-The User route implementation is as follows:
-
-App (`src/app.ts`) -> User Route (`src/user/user.route.ts`) -> User Controller (`src/user/user.controller.ts`) -> User Repository (`src/user/user.route.ts`) -> Database (`src/database.ts`)
-
-Additionally, the User Route utilizes the User Schema (`src/user/user.schema.ts`) to verify the shape of requests and responses, as appropriate.
-
-- `src/user/user.schema.ts`: User Schema utilizes TypeBox (`typebox`) with the Fastify TypeBox type provider (`@fastify/type-provider-typebox`)
-- `src/user/user.repository.ts`: The repository API utilizes `createUsersRepository` which returns a plain object with the methods: `create()`, `getById(userId)`
-  - Repository API is not complete. More methods are being added.
-- `src/user/user.controller.ts`: Controllers return Fastify responses and rely on route schemas for validation. Request bodies are cast in code; do not assume runtime typing without schema validation.
-- `src/user/user.route.ts`: Routes export a Fastify plugin factory (function `usersRoutes(repo)`) which is then registered in `app.ts` with a prefix.
-
-## 4) Notable files to inspect when changing behavior
-
-- `src/index.ts` — server entry and DB filename (`data/notes.db`)
-- `src/app.ts` — route registration and root health endpoint
-- `src/database.ts` — SQL schema; changing it affects all tooling and tests
-- `src/note/*` — schema, repository, controller, route implementation for Note
-- `src/user/*` - schema, repository, controller, route implementation for User
-- `test/*` — example tests that demonstrate in-memory DB usage and `app.inject`
-- `package.json` — scripts, exports, engines
-- `.github/workflows/ci.yaml` — CI steps (commitlint, format, lint, typecheck, tests, build)
-- `.husky/*` - Runs `lint-staged` (pre-commit steps, see line below) and sets up the pre-commit commit linting using the `commitlint` package
-- `lint-staged.config.js` - Pre-commit steps (format, lint, typecheck)
-
-## 5) Quick tips for Copilot sessions (short, actionable)
-
-- Prefer edits that preserve the package `"exports"` mapping or update `package.json` together with code moves.
-- When running tests locally, prefer `createDatabase(':memory:')` for unit tests to avoid persisting data to `data/notes.db`.
-- When adding routes, add TypeBox schemas in `note.schema.ts` and wire them into the route's schema option.
-- Work in a TDD fashion, adding failing tests first. Then, create enough code to make them pass. From there, iterate code to improve code quality/readability.
+When changing behavior, update the relevant plugin/route schema and add or adjust an `app.inject` test. Validate with the narrowest relevant test first, then run `pnpm run typecheck`, `pnpm run lint:check`, and `pnpm run format:check` as appropriate.
