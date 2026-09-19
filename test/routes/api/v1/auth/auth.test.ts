@@ -57,5 +57,48 @@ describe('Auth API', () => {
         'body/email must NOT have fewer than 1 characters'
       );
     });
+
+    it('should NOT authenticate with incorrect credentials', async (t) => {
+      const app = await buildTest(t);
+
+      const testDataSet = [
+        {
+          email: 'invalid@email.com',
+          password: 'Password123$',
+          description: 'email/user does not exist'
+        },
+        {
+          email: 'basic@example.com',
+          password: 'password_is_wrong',
+          description: 'email/user exists, but password is incorrect'
+        },
+        {
+          email: 'invalid@email.com',
+          password: 'password_is_wrong',
+          description: 'email/user does not exist AND the password is incorrect'
+        }
+      ];
+
+      for (const testData of testDataSet) {
+        const res = await app.inject({
+          method: 'POST',
+          url: `${ENDPOINT}`,
+          payload: {
+            email: testData.email,
+            password: testData.password
+          }
+        });
+
+        assert.strictEqual(
+          res.statusCode,
+          401,
+          `Failed for case: ${testData.description}`
+        );
+
+        assert.deepStrictEqual(JSON.parse(res.payload), {
+          message: 'Invalid email or password.'
+        });
+      }
+    });
   });
 });
