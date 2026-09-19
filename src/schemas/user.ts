@@ -1,7 +1,8 @@
 import { type Static, Type } from 'typebox';
 import { ErrorResponse } from './shared.js';
 
-const passwordPattern = '^(?=.*?[A-Z](?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-_]).*$';
+const passwordPattern =
+  '^(?=.*?[A-Z](?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-_]).*$';
 
 const PasswordSchema = Type.String({
   pattern: passwordPattern,
@@ -32,16 +33,25 @@ export const UserBodySchema = Type.Object(
   }
 );
 
-export const UserResponse = Type.Omit(UserBodySchema, ['password'], {
-  description: 'Resposne-safe user schema which omits the password'
-});
+export const UserResponse = Type.Omit(
+  UserBodySchema,
+  ['email', 'password', 'userId'],
+  {
+    description: 'Resposne-safe user schema which omits the password'
+  }
+);
 
 // POST /users/create endpoint
 export const createUserSchema = {
   tags: ['user'],
   summary: 'Create user',
   description: 'Create a new user',
-  body: Type.Omit(UserBodySchema, ['userId', 'password', 'dateOfCreation', 'dateOfLastAccess']),
+  body: Type.Omit(UserBodySchema, [
+    'userId',
+    'password',
+    'dateOfCreation',
+    'dateOfLastAccess'
+  ]),
   response: {
     201: UserResponse,
     400: ErrorResponse,

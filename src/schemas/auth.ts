@@ -1,10 +1,28 @@
 import { Static, Type } from 'typebox';
-import { EmailSchema, StringSchema } from './shared.js';
+import {
+  EmailSchema,
+  ErrorResponse,
+  StringSchema,
+  SuccessResponse
+} from 'noted/schemas/shared.js';
 
-export const CredentialsSchema = Type.Object({
+const CredentialsSchema = Type.Object({
   email: EmailSchema,
   password: StringSchema
 });
+
+const authResponseSchema = {
+  200: SuccessResponse,
+  401: ErrorResponse
+};
+
+export const authSchema = {
+  tags: ['auth'],
+  summary: 'User login/auth schema',
+  description: 'User login/authentication schema',
+  body: CredentialsSchema,
+  response: authResponseSchema
+};
 
 export type TCredentials = Static<typeof CredentialsSchema>;
 
