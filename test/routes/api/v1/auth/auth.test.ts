@@ -1,6 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { buildTest } from 'noted/#/helpers/setup.js';
+import { buildTest, expectValidationError } from 'noted/#/helpers/setup.js';
+
+const ENDPOINT = '/api/v1/auth/login';
 
 describe('Auth API', () => {
   describe('POST /api/v1/auth/login', () => {
@@ -19,7 +21,7 @@ describe('Auth API', () => {
 
       const res = await app.inject({
         method: 'POST',
-        url: '/api/v1/auth/login',
+        url: `${ENDPOINT}`,
         payload: {
           email: 'basic@example.com',
           password: 'Password123$'
@@ -34,6 +36,26 @@ describe('Auth API', () => {
 
       assert.strictEqual(res.statusCode, 500);
       assert.strictEqual(arg.err.message, 'I blew up.');
+    });
+
+    it('returns validation error if credentials are invalid', async (t) => {
+      const app = await buildTest(t);
+
+      const invalidCredentials = {
+        email: '',
+        password: 'Password123$'
+      };
+
+      const res = await app.injectWithLogin('basic@example.com', {
+        method: 'POST',
+        url: `${ENDPOINT}`,
+        payload: invalidCredentials
+      });
+
+      expectValidationError(
+        res,
+        'body/email must NOT have fewer than 1 characters'
+      );
     });
   });
 });
