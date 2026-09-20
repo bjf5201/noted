@@ -1,6 +1,10 @@
 import assert from 'node:assert';
 import { TestContext } from 'node:test';
-import Fastify, { FastifyInstance, InjectOptions, LightMyRequestResponse } from 'fastify';
+import Fastify, {
+  FastifyInstance,
+  InjectOptions,
+  LightMyRequestResponse
+} from 'fastify';
 import fp from 'fastify-plugin';
 import { webApp } from 'noted/app.js';
 
@@ -27,7 +31,10 @@ export function config() {
   };
 }
 
-export function expectValidationError(res: LightMyRequestResponse, expectedMessage: string) {
+export function expectValidationError(
+  res: LightMyRequestResponse,
+  expectedMessage: string
+) {
   assert.strictEqual(res.statusCode, 400);
   const { message } = JSON.parse(res.payload);
   assert.strictEqual(message, expectedMessage);
@@ -52,7 +59,11 @@ async function login(this: FastifyInstance, email: string) {
   return cookie.value;
 }
 
-async function injectWithLogin(this: FastifyInstance, email: string, opts: InjectOptions) {
+async function injectWithLogin(
+  this: FastifyInstance,
+  email: string,
+  opts: InjectOptions
+) {
   const cookieValue = await this.login(email);
 
   opts.cookies = {

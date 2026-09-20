@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { buildTest } from 'noted/#/helpers/setup.js';
 
-describe('API root', () => {
+describe('API root (GET /api)', () => {
   it('returns an error message when user is not logged in', async (t) => {
     const app = await buildTest(t);
 

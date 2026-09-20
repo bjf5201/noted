@@ -1,43 +1,36 @@
-import { type Static, Type } from 'typebox';
-import { ErrorResponse } from './shared.js';
+import { Type } from 'typebox';
+import { ErrorResponse, SuccessResponse } from './shared.js';
 
 const passwordPattern =
-  '^(?=.*?[A-Z](?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-_]).*$';
+  '^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).*$';
 
 const PasswordSchema = Type.String({
   pattern: passwordPattern,
   minLength: 8
 });
 
-export const UserSchema = {
+const UpdateCredentialsSchema = Type.Object({
+  currentPassword: PasswordSchema,
+  newPassword: PasswordSchema
+});
+
+export const UserSchema = Type.Object({
   username: Type.String({ minLength: 6, description: 'User username' }),
   email: Type.String({ format: 'email', description: 'User email address' }),
   password: PasswordSchema,
-  dateOfCreation: Type.String({
+  createdAt: Type.String({
     format: 'date',
     description: 'Date of user registration/creation'
-  }),
-  dateOfLastAccess: Type.String({
-    format: 'date',
-    description: 'Date of the last time account was accessed'
   })
-};
+});
 
-export const UserBodySchema = Type.Object(
-  {
-    userId: Type.Integer({ description: 'User ID' }),
-    ...UserSchema
-  },
-  {
-    description: 'User schema'
-  }
-);
+export const CreateUserBodySchema = Type.Omit(UserSchema, ['createdAt']);
 
 export const UserResponse = Type.Omit(
-  UserBodySchema,
-  ['email', 'password', 'userId'],
+  UserSchema,
+  ['email', 'password', 'createdAt'],
   {
-    description: 'Resposne-safe user schema which omits the password'
+    description: 'Response-safe user schema which omits the password'
   }
 );
 
@@ -46,14 +39,9 @@ export const createUserSchema = {
   tags: ['user'],
   summary: 'Create user',
   description: 'Create a new user',
-  body: Type.Omit(UserBodySchema, [
-    'userId',
-    'password',
-    'dateOfCreation',
-    'dateOfLastAccess'
-  ]),
+  body: CreateUserBodySchema,
   response: {
-    201: UserResponse,
+    201: SuccessResponse,
     400: ErrorResponse,
     500: ErrorResponse
   }
@@ -84,16 +72,15 @@ export const getUserSchema = {
   }
 };
 
-export const UpdateCredentialsSchema = Type.Object({
-  currentPassword: PasswordSchema,
-  newPassword: PasswordSchema
-});
-
-export type TUser = Static<typeof UserBodySchema>;
-export type TUserParams = Static<typeof getUserSchema.params>;
-export type TUserResponseSchema = Static<typeof UserResponse>;
-export type TCreateUserBody = Static<typeof createUserSchema.body>;
-export type TUpdateCredentials = Static<typeof UpdateCredentialsSchema>;
-
-export type TCreateUserDto = TCreateUserBody;
-export type TUserParamsDto = TUserParams;
+// PUT /user/update
+export const updateUserSchema = {
+  tags: ['user'],
+  summary: "Update user's password",
+  description: "Update the user's password",
+  body: UpdateCredentialsSchema,
+  response: {
+    200: SuccessResponse,
+    400: ErrorResponse,
+    401: ErrorResponse
+  }
+};
