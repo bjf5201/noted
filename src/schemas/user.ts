@@ -1,65 +1,65 @@
 import { Type } from 'typebox';
-import { ErrorResponse, SuccessResponse } from './shared.js';
+import {
+  EmailSchema,
+  ErrorResponse,
+  StringSchema,
+  SuccessResponse
+} from './shared.js';
 
 const passwordPattern =
   '^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).*$';
 
 const PasswordSchema = Type.String({
   pattern: passwordPattern,
-  minLength: 8
+  minLength: 8,
+  maxLength: 255
 });
 
-const UpdateCredentialsSchema = Type.Object({
+const CreateUserBodySchema = Type.Object({
+  username: StringSchema,
+  email: EmailSchema,
+  password: PasswordSchema
+});
+
+const UpdateCredentialsBodySchema = Type.Object({
   currentPassword: PasswordSchema,
   newPassword: PasswordSchema
 });
 
-export const UserSchema = Type.Object({
-  username: Type.String({ minLength: 6, description: 'User username' }),
-  email: Type.String({ format: 'email', description: 'User email address' }),
-  password: PasswordSchema,
-  createdAt: Type.String({
-    format: 'date',
-    description: 'Date of user registration/creation'
-  })
+const UserResponse = Type.Object({
+  id: Type.Integer(),
+  username: StringSchema,
+  email: StringSchema
 });
 
-export const CreateUserBodySchema = Type.Omit(UserSchema, ['createdAt']);
-
-export const UserResponse = Type.Omit(
-  UserSchema,
-  ['email', 'password', 'createdAt'],
-  {
-    description: 'Response-safe user schema which omits the password'
-  }
-);
-
-// POST /users/create endpoint
-export const createUserSchema = {
-  tags: ['user'],
+// POST /users
+export const CreateUserSchema = {
+  tags: ['Users'],
   summary: 'Create user',
   description: 'Create a new user',
   body: CreateUserBodySchema,
   response: {
-    201: SuccessResponse,
-    400: ErrorResponse,
+    201: UserResponse,
+    409: ErrorResponse,
     500: ErrorResponse
   }
 };
 
 // GET /users
 export const getAllUsersSchema = {
-  tags: ['user'],
+  tags: ['Users'],
   summary: 'Get all users',
   description: 'Get all users',
   response: {
-    200: Type.Array(UserResponse)
+    200: Type.Array(UserResponse),
+    400: ErrorResponse,
+    404: ErrorResponse
   }
 };
 
-// GET /user/:userId
+// GET /users/:userId
 export const getUserSchema = {
-  tags: ['user'],
+  tags: ['Users'],
   summary: 'Get user by id',
   description: 'Get a user by ID',
   params: Type.Object({
@@ -72,12 +72,12 @@ export const getUserSchema = {
   }
 };
 
-// PUT /user/update
+// PUT /users
 export const updateUserSchema = {
-  tags: ['user'],
+  tags: ['Users'],
   summary: "Update user's password",
   description: "Update the user's password",
-  body: UpdateCredentialsSchema,
+  body: UpdateCredentialsBodySchema,
   response: {
     200: SuccessResponse,
     400: ErrorResponse,
