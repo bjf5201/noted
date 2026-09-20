@@ -24,11 +24,11 @@ const swaggerPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
           description: 'Authorization routes'
         },
         {
-          name: 'user',
+          name: 'users',
           description: 'User routes'
         },
         {
-          name: 'note',
+          name: 'notes',
           description: 'Note routes'
         },
         {
