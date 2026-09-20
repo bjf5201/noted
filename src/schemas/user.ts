@@ -39,7 +39,9 @@ export const CreateUserSchema = {
   description: 'Create a new user',
   body: CreateUserBodySchema,
   response: {
-    201: UserResponse,
+    201: Type.Object({
+      id: Type.Integer()
+    }),
     409: ErrorResponse,
     500: ErrorResponse
   }
