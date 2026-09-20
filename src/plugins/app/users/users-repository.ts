@@ -33,6 +33,22 @@ export function createUsersRepository(fastify: FastifyInstance) {
       return user as (Auth & { password: string }) | undefined;
     },
 
+    async create(
+      user: { username: string; email: string; password: string },
+      executor: DatabaseExecutor = db
+    ) {
+      const [createdUser] = await executor
+        .insert(users)
+        .values(user)
+        .returning({ id: users.id });
+
+      return {
+        id: createdUser.id,
+        username: user.username,
+        email: user.email
+      };
+    },
+
     async updatePassword(
       email: string,
       hashedPassword: string,
