@@ -2,7 +2,12 @@ import { FastifyInstance } from 'fastify';
 
 export default async function (fastify: FastifyInstance) {
   fastify.addHook('onRequest', async (request, reply) => {
-    if (request.url.startsWith('/api/v1/auth/login')) {
+    const publicRoutes = new Set([
+      'POST /api/v1/users',
+      'POST /api/v1/auth/login'
+    ]);
+
+    if (publicRoutes.has(`${request.method} ${request.url}`)) {
       return;
     }
 
