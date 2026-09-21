@@ -83,6 +83,7 @@ export const updateUserSchema = {
   response: {
     200: SuccessResponse,
     400: ErrorResponse,
-    401: ErrorResponse
+    401: ErrorResponse,
+    429: ErrorResponse
   }
 };
