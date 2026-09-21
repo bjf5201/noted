@@ -134,7 +134,7 @@ describe('Users API', async () => {
       }
     });
 
-    it.skip('should update the password successfully', async (t) => {
+    it('should update the password successfully', async (t) => {
       app = await buildTest(t);
       const username = `update02-${Date.now()}`;
       const email = `${username}@example.com`;
@@ -144,6 +144,20 @@ describe('Users API', async () => {
           username,
           email,
           password: 'Password123$'
+        });
+
+        const reply = await updatePasswordWithLoginInjection(app, username, {
+          currentPassword: 'Password123$',
+          newPassword: 'NewPassword123$'
+        });
+
+        assert.strictEqual(reply.statusCode, 200);
+
+        const response = JSON.parse(reply.payload);
+
+        assert.deepStrictEqual(response, {
+          success: true,
+          message: 'Password updated successfully!'
         });
       } finally {
         await deleteUserByEmail(app, email);

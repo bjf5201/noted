@@ -8,7 +8,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     {
       schema: CreateUserSchema
     },
-    async function (request, reply) {
+    async function createUser(request, reply) {
       const { username, email, password } = request.body;
 
       const isExistingUser = await usersRepository.findByEmail(email);
@@ -42,7 +42,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
       schema: UpdateUserSchema
     },
-    async function (request, reply) {
+    async function updateUser(request, reply) {
       const { newPassword, currentPassword } = request.body;
       const { email } = request.session.user;
 
