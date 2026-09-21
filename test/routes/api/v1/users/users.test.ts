@@ -219,22 +219,78 @@ describe('Users API (/api/v1/users)', async () => {
       }
     });
 
-    it("should return 401 if the currentPassword entered does not match the current user's password", async (t) => {
+    it("should return code 401 and proper error message if the currentPassword entered does not match the current user's password", async (t) => {
       app = await buildTest(t);
       const username = `update05-${Date.now()}`;
       const email = `${username}@example.com`;
 
-      await createUser(app, { username, email, password: 'Password123$' });
-      const reply = await updatePasswordWithLoginInjection(app, username, {
-        currentPassword: 'WrongPassword123$',
-        newPassword: 'Password1234$'
-      });
+      try {
+        await createUser(app, { username, email, password: 'Password123$' });
+        const reply = await updatePasswordWithLoginInjection(app, username, {
+          currentPassword: 'WrongPassword123$',
+          newPassword: 'Password1234$'
+        });
 
-      const response = JSON.parse(reply.payload);
-      assert.strictEqual(reply.statusCode, 401);
-      assert.deepStrictEqual(response, {
-        message: 'Incorrect current password.'
-      });
+        const response = JSON.parse(reply.payload);
+        assert.strictEqual(reply.statusCode, 401);
+        assert.deepStrictEqual(response, {
+          message: 'Incorrect current password.'
+        });
+      } finally {
+        deleteUserByEmail(app, username);
+      }
+    });
+
+    it('should return code 401 and proper error message if the user does not exist', async (t) => {
+      app = await buildTest(t);
+      const username = `update06-${Date.now()}`;
+      const email = `${username}@example.com`;
+
+      try {
+        // Create a valid user and log them in so the app has a real, authenticated session
+        await createUser(app, { username, email, password: 'Password123$' });
+
+        const loginReply = await app.injectWithLogin(email, {
+          method: 'POST',
+          url: `${AUTH_ENDPOINT}/login`,
+          payload: {
+            email,
+            password: 'Password123$'
+          }
+        });
+
+        // Retrieve session cookie
+        const sessionCookie = loginReply.cookies.find(
+          (cookie) => cookie.name === app.config.COOKIE_NAME
+        );
+
+        // Confirm login successed and session cookie was created
+        assert.strictEqual(loginReply.statusCode, 200);
+        assert.ok(sessionCookie);
+
+        // Simulate a stale user session by deleting the user record from database
+        await deleteUserByEmail(app, email);
+
+        // Send a password update request using the same (stale) session cookie
+        // so the app verifies the session (but refuses request when user doesn't exist)
+        const updateResponse = await app.inject({
+          method: 'PUT',
+          url: '/api/v1/users',
+          payload: {
+            currentPassword: 'Password123$',
+            newPassword: 'NewPassword123$'
+          },
+          cookies: {
+            [app.config.COOKIE_NAME]: sessionCookie.value
+          }
+        });
+
+        const response = JSON.parse(updateResponse.payload);
+        assert.strictEqual(updateResponse.statusCode, 401);
+        assert.deepStrictEqual(response, { message: 'User does not exist.' });
+      } finally {
+        await deleteUserByEmail(app, email);
+      }
     });
   });
 });
