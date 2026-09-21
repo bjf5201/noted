@@ -207,8 +207,13 @@ describe('Users API (/api/v1/users)', async () => {
         });
 
         const response = JSON.parse(reply.payload);
-        assert.strictEqual(reply.statusCode, 200);
-        assert.deepStrictEqual(response, { message: '' });
+        assert.strictEqual(reply.statusCode, 400);
+        assert.deepStrictEqual(response, {
+          message:
+            'body/newPassword must match pattern "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).*$"',
+          statusCode: 400,
+          error: 'Bad Request'
+        });
       } finally {
         deleteUserByEmail(app, email);
       }
