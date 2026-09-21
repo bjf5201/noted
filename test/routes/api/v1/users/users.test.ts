@@ -218,5 +218,23 @@ describe('Users API (/api/v1/users)', async () => {
         deleteUserByEmail(app, email);
       }
     });
+
+    it("should return 401 if the currentPassword entered does not match the current user's password", async (t) => {
+      app = await buildTest(t);
+      const username = `update05-${Date.now()}`;
+      const email = `${username}@example.com`;
+
+      await createUser(app, { username, email, password: 'Password123$' });
+      const reply = await updatePasswordWithLoginInjection(app, username, {
+        currentPassword: 'WrongPassword123$',
+        newPassword: 'Password1234$'
+      });
+
+      const response = JSON.parse(reply.payload);
+      assert.strictEqual(reply.statusCode, 401);
+      assert.deepStrictEqual(response, {
+        message: 'Incorrect current password.'
+      });
+    });
   });
 });
