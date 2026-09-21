@@ -5,13 +5,16 @@ import { FastifyInstance } from 'fastify';
 import { buildTest } from 'noted/#/helpers/setup.js';
 import { users } from 'noted/database/schema.js';
 
+const AUTH_ENDPOINT = '/api/v1/auth';
+const USERS_ENDPOINT = '/api/v1/users';
+
 async function createUser(
   app: FastifyInstance,
   payload: { email: string; username: string; password: string }
 ) {
   return app.inject({
     method: 'POST',
-    url: '/api/v1/users',
+    url: USERS_ENDPOINT,
     payload
   });
 }
@@ -30,15 +33,13 @@ async function updatePasswordWithLoginInjection(
 ) {
   return app.injectWithLogin(`${username}@example.com`, {
     method: 'PUT',
-    url: '/api/v1/users',
+    url: USERS_ENDPOINT,
     payload
   });
 }
 
 describe('Users API (/api/v1/users)', async () => {
   // TODO: there are a lot of strings that could be constants. Create a constants file.
-  const AUTH_ENDPOINT = '/api/v1/auth';
-  const USERS_ENDPOINT = '/api/v1/users';
   let app: FastifyInstance;
 
   describe('POST /api/v1/users (Create new user)', () => {
@@ -103,7 +104,7 @@ describe('Users API (/api/v1/users)', async () => {
         for (let i = 0; i < 3; i++) {
           const replyInner = await app.inject({
             method: 'PUT',
-            url: `${USERS_ENDPOINT}`,
+            url: USERS_ENDPOINT,
             payload: {
               currentPassword: 'WrongPassword123$',
               newPassword: 'Password123$'
@@ -118,7 +119,7 @@ describe('Users API (/api/v1/users)', async () => {
 
         const reply = await app.inject({
           method: 'PUT',
-          url: `${USERS_ENDPOINT}`,
+          url: USERS_ENDPOINT,
           payload: {
             currentPassword: 'IncorrectPassword123$',
             newPassword: 'Password123$'
