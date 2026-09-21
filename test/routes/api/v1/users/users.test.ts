@@ -3,15 +3,13 @@ import assert from 'node:assert';
 import { eq } from 'drizzle-orm';
 import { FastifyInstance } from 'fastify';
 import { buildTest } from 'noted/#/helpers/setup.js';
-import { scryptHash } from 'noted/plugins/app/password-manager.js';
 import { users } from 'noted/database/schema.js';
 
 async function createUser(
   app: FastifyInstance,
-  email: string,
   payload: { email: string; username: string; password: string }
 ) {
-  return app.injectWithLogin(email, {
+  return app.inject({
     method: 'POST',
     url: '/api/v1/users',
     payload
@@ -25,7 +23,7 @@ async function deleteUserByEmail(
   await app.db.delete(users).where(eq(users.email, email));
 }
 
-async function updatePassword(
+async function updatePasswordWithLoginInjection(
   app: FastifyInstance,
   username: string,
   payload: { currentPassword: string; newPassword: string }
@@ -39,7 +37,6 @@ async function updatePassword(
 
 describe('Users API', async () => {
   // TODO: there are a lot of strings that could be constants. Create a constants file.
-  const hash = await scryptHash('Password123$');
   const AUTH_ENDPOINT = '/api/v1/auth';
   const USERS_ENDPOINT = '/api/v1/users';
   let app: FastifyInstance;
@@ -47,17 +44,14 @@ describe('Users API', async () => {
   describe('POST /api/v1/users', () => {
     it('can successfully create a user', async (t) => {
       app = await buildTest(t);
-      const email = `create-${Date.now()}@example.com`;
+      const username = `create-${Date.now()}`;
+      const email = `${username}@example.com`;
 
       try {
-        const reply = await app.inject({
-          method: 'POST',
-          url: `${USERS_ENDPOINT}`,
-          payload: {
-            username: `create-${Date.now()}`,
-            email,
-            password: 'Password123$'
-          }
+        const reply = await createUser(app, {
+          email,
+          username,
+          password: 'Password123$'
         });
 
         const response = JSON.parse(reply.payload);
@@ -82,13 +76,14 @@ describe('Users API', async () => {
   describe('Update User API', async () => {
     it('Enforces rate limiting, allowing no more than 3 password update attempts per minute', async (t) => {
       app = await buildTest(t);
-      const email = `update01-${Date.now()}@example.com`;
+      const username = `update01-${Date.now()}`;
+      const email = `${username}@example.com`;
 
       try {
-        await createUser(app, email, {
-          username: `update01-${Date.now()}`,
+        await createUser(app, {
+          username,
           email,
-          password: hash
+          password: `Password123$`
         });
 
         const loginReply = await app.injectWithLogin(email, {
@@ -110,7 +105,7 @@ describe('Users API', async () => {
             method: 'PUT',
             url: `${USERS_ENDPOINT}`,
             payload: {
-              currentPassword: 'wrong_password',
+              currentPassword: 'WrongPassword123$',
               newPassword: 'Password123$'
             },
             cookies: {
@@ -125,7 +120,7 @@ describe('Users API', async () => {
           method: 'PUT',
           url: `${USERS_ENDPOINT}`,
           payload: {
-            currentPassword: 'incorrect_password',
+            currentPassword: 'IncorrectPassword123$',
             newPassword: 'Password123$'
           },
           cookies: {
@@ -141,13 +136,14 @@ describe('Users API', async () => {
 
     it.skip('should update the password successfully', async (t) => {
       app = await buildTest(t);
-      const email = `update02-${Date.now()}@example.com`;
+      const username = `update02-${Date.now()}`;
+      const email = `${username}@example.com`;
 
       try {
-        await createUser(app, email, {
-          username: `update02-${Date.now()}`,
+        await createUser(app, {
+          username,
           email,
-          password: hash
+          password: 'Password123$'
         });
       } finally {
         await deleteUserByEmail(app, email);
