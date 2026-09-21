@@ -1,6 +1,6 @@
 export default {
   // run typecheck project-wide
-  'src/**/*.{ts,tsx}': [() => 'tsc --noEmit'],
+  '(src|test)/**/*.{ts,tsx}': [() => 'tsc --noEmit'],
 
   // run formatting and linting on staged files only
   '**/*.{ts,tsx,js,jsx}': (filenames) => [
