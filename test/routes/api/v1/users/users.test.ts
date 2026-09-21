@@ -292,5 +292,41 @@ describe('Users API (/api/v1/users)', async () => {
         await deleteUserByEmail(app, email);
       }
     });
+
+    it('should handle errors gracefully by returning 500 Internal Server Error with unexpected errors', async (t) => {
+      app = await buildTest(t);
+      const username = `update07-${Date.now()}`;
+      const email = `${username}@example.com`;
+
+      try {
+        const createReply = await createUser(app, {
+          username,
+          email,
+          password: 'Password123$'
+        });
+
+        assert.strictEqual(createReply.statusCode, 201);
+
+        const { mock: mockHash } = t.mock.method(app.passwordManager, 'hash');
+
+        mockHash.mockImplementation(() => {
+          throw new Error('Unexpected hashing error');
+        });
+
+        const reply = await updatePasswordWithLoginInjection(app, username, {
+          currentPassword: 'Password123$',
+          newPassword: 'NewPassword123$'
+        });
+
+        assert.strictEqual(reply.statusCode, 500);
+        assert.deepStrictEqual(JSON.parse(reply.payload), {
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: 'Unexpected hashing error'
+        });
+      } finally {
+        await deleteUserByEmail(app, email);
+      }
+    });
   });
 });
