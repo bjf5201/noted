@@ -49,7 +49,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const user = await usersRepository.findByEmail(email);
 
       if (!user) {
-        return reply.code(401).send({ message: 'User does not exist. ' });
+        return reply.code(401).send({ message: 'User does not exist.' });
       }
 
       const isPasswordCorrect = await passwordManager.compare(
