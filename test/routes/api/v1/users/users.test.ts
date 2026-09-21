@@ -164,5 +164,54 @@ describe('Users API (/api/v1/users)', async () => {
         await deleteUserByEmail(app, email);
       }
     });
+
+    it('should return code 400 and proper error message if the new password is the same as the current password', async (t) => {
+      app = await buildTest(t);
+      const username = `update03-${Date.now()}`;
+      const email = `${username}@example.com`;
+
+      try {
+        await createUser(app, { username, email, password: 'Password123$' });
+
+        const reply = await updatePasswordWithLoginInjection(app, username, {
+          currentPassword: 'Password123$',
+          newPassword: 'Password123$'
+        });
+
+        assert.strictEqual(reply.statusCode, 400);
+
+        const response = JSON.parse(reply.payload);
+        assert.deepStrictEqual(response, {
+          message: 'New password must not match current password.'
+        });
+      } finally {
+        deleteUserByEmail(app, email);
+      }
+    });
+
+    it('should return code 400 and proper error message if the new password does not match the required password pattern', async (t) => {
+      app = await buildTest(t);
+      const username = `update04-${Date.now()}`;
+      const email = `${username}@example.com`;
+
+      try {
+        await createUser(app, {
+          email,
+          username,
+          password: 'Password123$'
+        });
+
+        const reply = await updatePasswordWithLoginInjection(app, username, {
+          currentPassword: 'Password123$',
+          newPassword: 'weak_password'
+        });
+
+        const response = JSON.parse(reply.payload);
+        assert.strictEqual(reply.statusCode, 200);
+        assert.deepStrictEqual(response, { message: '' });
+      } finally {
+        deleteUserByEmail(app, email);
+      }
+    });
   });
 });
