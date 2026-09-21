@@ -52,13 +52,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         return reply.code(401).send({ message: 'User does not exist. ' });
       }
 
-      const isPasswordValid = await passwordManager.compare(
+      const isPasswordCorrect = await passwordManager.compare(
         currentPassword,
         user.password
       );
 
-      if (!isPasswordValid) {
-        return reply.code(401).send({ message: 'Invalid current password.' });
+      if (!isPasswordCorrect) {
+        return reply.code(401).send({ message: 'Incorrect current password.' });
       }
 
       if (newPassword === currentPassword) {
