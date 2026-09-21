@@ -22,7 +22,7 @@ const CreateUserBodySchema = Type.Object({
 });
 
 const UpdateCredentialsBodySchema = Type.Object({
-  currentPassword: PasswordSchema,
+  currentPassword: StringSchema,
   newPassword: PasswordSchema
 });
 
