@@ -8,13 +8,14 @@ import { users } from 'noted/database/schema.js';
 
 async function createUser(
   app: FastifyInstance,
-  userData: typeof users.$inferInsert
+  email: string,
+  payload: { email: string; username: string; password: string }
 ) {
-  const [user] = await app.db.insert(users).values(userData).returning({
-    id: users.id
+  return app.injectWithLogin(email, {
+    method: 'POST',
+    url: '/api/v1/users',
+    payload
   });
-
-  return user.id;
 }
 
 async function deleteUserByEmail(
@@ -31,7 +32,7 @@ async function updatePassword(
 ) {
   return app.injectWithLogin(`${username}@example.com`, {
     method: 'PUT',
-    url: '/api/v1/users/update',
+    url: '/api/v1/users',
     payload
   });
 }
@@ -78,14 +79,14 @@ describe('Users API', async () => {
     });
   });
 
-  describe.skip('Update User API', async () => {
+  describe('Update User API', async () => {
     it('Enforces rate limiting, allowing no more than 3 password update attempts per minute', async (t) => {
       app = await buildTest(t);
       const email = `update01-${Date.now()}@example.com`;
 
       try {
-        await createUser(app, {
-          username: 'random-user-0',
+        await createUser(app, email, {
+          username: `update01-${Date.now()}`,
           email,
           password: hash
         });
@@ -143,8 +144,8 @@ describe('Users API', async () => {
       const email = `update02-${Date.now()}@example.com`;
 
       try {
-        await createUser(app, {
-          username: 'random-1',
+        await createUser(app, email, {
+          username: `update02-${Date.now()}`,
           email,
           password: hash
         });
