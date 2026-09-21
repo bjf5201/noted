@@ -35,13 +35,13 @@ async function updatePasswordWithLoginInjection(
   });
 }
 
-describe('Users API', async () => {
+describe('Users API (/api/v1/users)', async () => {
   // TODO: there are a lot of strings that could be constants. Create a constants file.
   const AUTH_ENDPOINT = '/api/v1/auth';
   const USERS_ENDPOINT = '/api/v1/users';
   let app: FastifyInstance;
 
-  describe('POST /api/v1/users', () => {
+  describe('POST /api/v1/users (Create new user)', () => {
     it('can successfully create a user', async (t) => {
       app = await buildTest(t);
       const username = `create-${Date.now()}`;
@@ -73,7 +73,7 @@ describe('Users API', async () => {
     });
   });
 
-  describe('Update User API', async () => {
+  describe('PUT /api/v1/users (Update user)', async () => {
     it('Enforces rate limiting, allowing no more than 3 password update attempts per minute', async (t) => {
       app = await buildTest(t);
       const username = `update01-${Date.now()}`;

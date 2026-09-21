@@ -4,8 +4,8 @@ import { buildTest, expectValidationError } from 'noted/#/helpers/setup.js';
 
 const ENDPOINT = '/api/v1/auth/login';
 
-describe('Auth API', () => {
-  describe('POST /api/v1/auth/login', () => {
+describe('Auth API (/api/v1/auth)', () => {
+  describe('POST /api/v1/auth/login (User login)', () => {
     it('Unwinds and partial work if password checking fails for reason other than incorrect password', async (t) => {
       const app = await buildTest(t);
 
