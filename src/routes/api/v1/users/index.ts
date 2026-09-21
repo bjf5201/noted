@@ -1,5 +1,5 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
-import { CreateUserSchema, updateUserSchema } from 'noted/schemas/user.js';
+import { CreateUserSchema, UpdateUserSchema } from 'noted/schemas/user.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { usersRepository, passwordManager } = fastify;
@@ -40,7 +40,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           timeWindow: '1 minute'
         }
       },
-      schema: updateUserSchema
+      schema: UpdateUserSchema
     },
     async function (request, reply) {
       const { newPassword, currentPassword } = request.body;

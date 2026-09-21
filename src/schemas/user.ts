@@ -48,7 +48,7 @@ export const CreateUserSchema = {
 };
 
 // GET /users
-export const getAllUsersSchema = {
+export const GetAllUsersSchema = {
   tags: ['Users'],
   summary: 'Get all users',
   description: 'Get all users',
@@ -60,7 +60,7 @@ export const getAllUsersSchema = {
 };
 
 // GET /users/:userId
-export const getUserSchema = {
+export const GetUserSchema = {
   tags: ['Users'],
   summary: 'Get user by id',
   description: 'Get a user by ID',
@@ -75,7 +75,7 @@ export const getUserSchema = {
 };
 
 // PUT /users
-export const updateUserSchema = {
+export const UpdateUserSchema = {
   tags: ['Users'],
   summary: "Update user's password",
   description: "Update the user's password",
