@@ -31,7 +31,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return reply.code(201).send(user);
     }
   );
-  fastify.put(
+  fastify.patch(
     '/',
     {
       config: {
