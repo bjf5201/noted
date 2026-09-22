@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { buildTest, expectValidationError } from 'noted/#/helpers/setup.js';
+import { protectedRoutes } from 'noted/#/helpers/constants.js';
 
 const ENDPOINT = '/api/v1/auth/login';
 
@@ -97,6 +98,23 @@ describe('Auth API (/api/v1/auth)', () => {
 
         assert.deepStrictEqual(JSON.parse(res.payload), {
           message: 'Invalid email or password.'
+        });
+      }
+    });
+  });
+
+  describe('Protected endpoints', () => {
+    it('rejects unauthenticated access to protected endpoints', async (t) => {
+      const app = await buildTest(t);
+
+      for (const route of protectedRoutes) {
+        const reply = await app.inject(route);
+
+        assert.strictEqual(reply.statusCode, 404);
+        assert.deepStrictEqual(JSON.parse(reply.payload), {
+          statusCode: 404,
+          error: 'Not Found',
+          message: 'You must be authenticated to access this route.'
         });
       }
     });
