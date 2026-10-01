@@ -82,8 +82,9 @@ export const autoConfig = {
   // TODO: Use typebox here? Or just leave it?
   schema,
 
-  // Needed to read .env file in root folder
-  dotenv: true,
+  // Node scripts select and load the .env files as desired
+  // Disabling this setting avoids a second, implicit configuration source
+  dotenv: false,
 
   // Source for configuration data
   // Optional, default: process.env

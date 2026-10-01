@@ -1,5 +1,5 @@
 # Shhh
-.env*.local
+.env.*
 !.env.sample
 
 # Project files
