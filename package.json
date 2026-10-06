@@ -57,6 +57,7 @@
     "@fastify/cookie": "^11.1.2",
     "@fastify/cors": "^11.3.0",
     "@fastify/env": "^7.0.0",
+    "@fastify/helmet": "^13.1.1",
     "@fastify/rate-limit": "^11.2.0",
     "@fastify/sensible": "^6.0.5",
     "@fastify/session": "^11.1.2",
