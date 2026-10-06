@@ -1,20 +1,93 @@
 # Noted Markdown App
 
-This project is in progress.
+Noted is a work in progress.
 
-## Dev Setup
+## 1. Quickstart
 
-To work on this repo, follow the steps below.
+### Requirements
 
-1. Clone the repo to your local environment with `git clone git@github.com:bjf5201/noted.git`
+- Node.js `24.18.0`
+- pnpm
 
-2. Open with VSCode and select "Open in Container" when prompted. If using another editor, skip this step.
+1. Clone the repository:
 
-3. Begin editing!
+   ```sh
+   git clone git@github.com:bjf5201/noted.git
+   cd noted
+   ```
 
-## Test Setup
+2. Open the folder in VS Code and choose **Reopen in Container** when prompted. The Dev Container installs dependencies and starts the local Postgres service.
 
-Create and migrate the dedicated test database when needed. Seed it before running tests that rely on the baseline users:
+3. Create local configuration files as described in [Configuration](#2-configuration).
+
+4. Start the development server:
+
+   ```sh
+   pnpm run dev
+   ```
+
+To work outside the Dev Container, install dependencies with `pnpm install` and configure a reachable Postgres database in your local environment.
+
+## 2. Configuration
+
+### Env files
+
+Use separate files for shared local defaults, personal overrides, and tests:
+
+- `.env.sample` is the tracked template. It must contain placeholders or disposable sample values, never real credentials.
+- `.env` contains local shared/default values.
+- `.env.local` contains personal development overrides.
+- `.env.test` contains test-only overrides and should select the dedicated `noted_test` database.
+- Production values come from the deployment environment or secret manager, not local env files.
+
+The `.env`, `.env.local`, and `.env.test` files are ignored by Git. Copy `.env.sample` to `.env`, then create `.env.local` and `.env.test` as needed. Verify variable names against the application configuration; `COOKIE_SECRET` is required. Never commit real secrets. If Git already tracks a sensitive file, `.gitignore` does not untrack it; use `git rm --cached <file>` and rotate any exposed credentials.
+
+### Precedence
+
+The development scripts load `.env` followed by `.env.local`. The test script loads `.env` followed by `.env.test`. Later files override earlier files for duplicate keys, but variables already present in the shell or container environment take precedence over values loaded from files.
+
+The Fastify env plugin validates `process.env` and exposes the result as `fastify.config`. It does not load another env file. If an environment value is unexpected, check whether it is already set:
+
+```sh
+printenv VARIABLE_NAME
+```
+
+For a one-off check without an inherited value:
+
+```sh
+env -u VARIABLE_NAME pnpm run test
+```
+
+### Docker Compose and the Dev Container
+
+Docker Compose configures containers before the application process starts. In this repository, the app service receives `POSTGRES_HOST=postgres` and `POSTGRES_PORT=5432`. The Postgres service uses Compose interpolation for its initialization settings, with defaults including `POSTGRES_DB=noted_dev`.
+
+Compose configuration and Node's `--env-file` options are separate. A Node env-file option cannot replace a value already present in the app container. The Postgres image uses `POSTGRES_DB` when it initializes its data directory; changing that setting later does not create or rename a database in an existing volume. Create the test database separately as described under [Testing](#4-testing).
+
+## 3. Development Commands
+
+| Command                 | Purpose                                                    |
+| ----------------------- | ---------------------------------------------------------- |
+| `pnpm run dev`          | Run the server in watch mode with `.env` and `.env.local`. |
+| `pnpm run start`        | Run the server once with `.env` and `.env.local`.          |
+| `pnpm run typecheck`    | Type-check the project.                                    |
+| `pnpm run lint:check`   | Check lint rules without applying fixes.                   |
+| `pnpm run format:check` | Check formatting.                                          |
+| `pnpm run build`        | Compile the project into `dist`.                           |
+
+## 4. Testing
+
+Run tests with:
+
+```sh
+pnpm run test
+```
+
+The test command loads `.env` followed by `.env.test`. Keep `.env.test` pointed at the dedicated test database, not your development or production database.
+
+### Test database setup
+
+For a new test database, create it, apply migrations, seed the baseline users, then run tests:
 
 ```sh
 pnpm run db:create:t
@@ -23,97 +96,36 @@ pnpm run db:seed:t
 pnpm run test
 ```
 
-`db:create:t` is needed only if the test database does not exist; db:migrate:t applies schema migrations. Run db:seed:t after creating or resetting the test database, or whenever the baseline users need to be restored. Seeding truncates the user and role tables first, so only run it against the dedicated test database, never your development or production database.
+Skip `db:create:t` if the database already exists. Run migrations when the schema changes. Seed after creating or resetting the test database, or whenever baseline users need to be restored.
 
-The seed script also requires `CAN_SEED_DATABASE=1`, which must be available from .env or the process environment. Use `pnpm run db:seed:t` rather than running the generic `db:seed` command so the script targets `noted_test`.
+**Warning:** `db:seed:t` truncates the user and role tables before inserting its baseline users. Run it only against `noted_test`, never against a development or production database. Seeding requires `CAN_SEED_DATABASE=1`, normally set in `.env`.
 
-## Environment Configuration
+## 5. Production
 
-Keep configuration specific to the environment that consumes it. Node loads application settings when a script starts; Docker Compose configures the containers and the Postgres service. These are separate steps, and a Compose value already present in a container cannot be replaced by Node's `--env-file` option.
+Provide required configuration through the deployment environment or a secret manager. Do not use `.env.local` or `.env.test` in production, and do not use `pnpm run start` as a production command because it explicitly loads local env files.
 
-### Env files
-
-- `.env.sample` is the tracked template. It is for disposable local development only; replace sample credentials and secrets with local values. Never put real credentials in this file.
-- `.env` contains local shared/default values and is ignored by Git.
-- `.env.local` contains personal development overrides and is ignored by Git. The `dev` and `start` scripts load it after `.env`.
-- `.env.test` contains test-only overrides and is ignored by Git. The `test` script loads it after `.env`; use a dedicated test database such as `noted_test`.
-- Production configuration comes from the deployment environment or secret manager, not developer env files. Build with `pnpm run build` and run `node dist/server.js` so local env files are not loaded.
-
-To create local files, copy `.env.sample` to `.env`, then create `.env.local` and `.env.test` as needed. Keep real secrets out of Git. `.gitignore` prevents new files from being tracked, but does not untrack a file already committed; use `git rm --cached <file>` to stop tracking one while keeping the local copy.
-
-### Precedence and commands
-
-The current commands select the app's env files explicitly:
+Build with:
 
 ```sh
-pnpm run dev
-pnpm run test
+pnpm run build
 ```
 
-`dev` loads `.env` followed by `.env.local`; `test` loads `.env` followed by `.env.test`. For duplicate keys, the later file overrides the earlier file, but a variable already exported in the shell/container takes precedence over values in both files. Check inherited values with `printenv VARIABLE_NAME` when a value is unexpected. Remove the variable from the container/shell or run a one-off command with `env -u VARIABLE_NAME ...` when you need to verify file precedence.
+This repository does not currently define a production-specific start script. Establish and verify the production runtime command as part of deployment configuration. The environment must provide the required database and cookie settings.
 
-The Fastify env plugin validates `process.env` and decorates `fastify.config`; it does not load another env file. This keeps the script's selected files as the source of application configuration.
+## 6. Troubleshooting: WSL SSH Forwarding
 
-### Dev Container and Postgres
+When using VS Code with WSL, Git operations in the Dev Container may need access to the SSH agent.
 
-The Compose `app` service provides infrastructure connection settings such as `POSTGRES_HOST` and `POSTGRES_PORT`. Application values such as `POSTGRES_DATABASE` and `COOKIE_SECRET` are loaded by the Node command, not injected into the app service by Compose.
-
-The Postgres service's `POSTGRES_DB` is an initialization setting. The official image applies it when the data directory is first initialized; changing it later does not create or rename databases in an existing named volume. Create and migrate the test database separately with the test database commands when needed:
+Inside the Dev Container, check whether an agent socket is available:
 
 ```sh
-pnpm run db:create:t
-pnpm run db:migrate:t
-```
-
-Compose interpolation (for example, `${POSTGRES_DATABASE:-noted_dev}` in `compose.yaml`) is separate from Node's `--env-file` loading. Keep Postgres service initialization values and application runtime values aligned, and do not assume a Node env-file flag changes the already-running container or its initialized database volume.
-
-### SSH Agent Forwarding in WSL2
-
-If you are working with VSCode on WSL2 as your dev environment, you will need to ensure that your SSH Agent is forwarded into the devcontainer in order to communicate with GitHub properly.
-
-To ensure your ssh-agent is running, add the following code to your `.bash_profile` or `.profile` config:
-
-```bash
-# Create ssh-agent at startup
-if [ -z "$SSH_AUTH_SOCK" ]; then
-    # Check for a currently running instance of the agent
-    RUNNING_AGENT="`ps -ax | grep 'ssh-agent -s' | grep -v grep | wc -l | tr -d '[:space:]'`"
-    if [ "$RUNNING_AGENT" = "0" ]; then
-        # Launch a new instance of the agent
-        ssh-agent -s &> $HOME/.ssh/ssh-agent
-    fi
-    eval `cat $HOME/.ssh/ssh-agent`
-fi
-
-# Add key to this ssh-agent session.
-# Running `ssh-add` without arguments automatically adds:
-#   - ~/.ssh/id_rsa
-#   - ~/.ssh/id_dsa
-#   - ~/.ssh/id_ecdsa
-#   - ~/.ssh/id_ecdsa_sk
-#   - ~/.ssh/id_ed25519
-#   - ~/.ssh/id_ed25519_sk
-ssh-add
-
-# if running bash
-if [ -n "$BASH_VERSION" ]; then
-    # include ~/.bashrc if it exists
-    if [ -f "$HOME/.bashrc" ]; then
-        . "$HOME/.bashrc"
-    fi
-fi
-```
-
-To ensure that VSCode has been forwarded the SSH agent, run the following _inside_ your devcontainer:
-
-```bash
 echo "$SSH_AUTH_SOCK"
 ```
 
-If it is blank, the SSH agent has not be forwarded. Otherwise, proceed to the next check:
+If the output is empty, check that your SSH agent is running in WSL and that VS Code is forwarding it. Then test GitHub authentication from the container:
 
-```bash
+```sh
 ssh -T git@github.com
 ```
 
-You should recieve an output similar to: `Hi {username}! You've successfully authenticated, but GitHub does not provide shell access.`
+A successful connection reports that authentication succeeded and that GitHub does not provide shell access.
