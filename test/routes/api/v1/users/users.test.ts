@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { eq } from 'drizzle-orm';
 import { FastifyInstance } from 'fastify';
-import { buildTest } from 'noted/#/helpers/setup.js';
+import { buildTest as build } from 'noted/#/helpers/setup.js';
 import { users } from 'noted/database/schema.js';
 
 const AUTH_ENDPOINT = '/api/v1/auth';
@@ -20,7 +20,7 @@ async function createUser(
 }
 
 async function deleteUserByEmail(
-  app: Awaited<ReturnType<typeof buildTest>>,
+  app: Awaited<ReturnType<typeof build>>,
   email: string
 ) {
   await app.db.delete(users).where(eq(users.email, email));
@@ -44,7 +44,7 @@ describe('Users API (/api/v1/users)', async () => {
 
   describe.skip('POST /api/v1/users (Create new user)', () => {
     it('can successfully create a user', async (t) => {
-      app = await buildTest(t);
+      app = await build(t);
       const username = `create-${Date.now()}`;
       const email = `${username}@example.com`;
 
@@ -76,7 +76,7 @@ describe('Users API (/api/v1/users)', async () => {
 
   describe('PATCH /api/v1/users (Update user)', async () => {
     it('Enforces rate limiting, allowing no more than 3 password update attempts per minute', async (t) => {
-      app = await buildTest(t);
+      app = await build(t);
       const username = `update01-${Date.now()}`;
       const email = `${username}@example.com`;
 
@@ -136,7 +136,7 @@ describe('Users API (/api/v1/users)', async () => {
     });
 
     it('should update the password successfully', async (t) => {
-      app = await buildTest(t);
+      app = await build(t);
       const username = `update02-${Date.now()}`;
       const email = `${username}@example.com`;
 
@@ -166,7 +166,7 @@ describe('Users API (/api/v1/users)', async () => {
     });
 
     it('should return code 400 and proper error message if the new password is the same as the current password', async (t) => {
-      app = await buildTest(t);
+      app = await build(t);
       const username = `update03-${Date.now()}`;
       const email = `${username}@example.com`;
 
@@ -190,7 +190,7 @@ describe('Users API (/api/v1/users)', async () => {
     });
 
     it('should return code 400 and proper error message if the new password does not match the required password pattern', async (t) => {
-      app = await buildTest(t);
+      app = await build(t);
       const username = `update04-${Date.now()}`;
       const email = `${username}@example.com`;
 
@@ -220,7 +220,7 @@ describe('Users API (/api/v1/users)', async () => {
     });
 
     it("should return code 401 and proper error message if the currentPassword entered does not match the current user's password", async (t) => {
-      app = await buildTest(t);
+      app = await build(t);
       const username = `update05-${Date.now()}`;
       const email = `${username}@example.com`;
 
@@ -242,7 +242,7 @@ describe('Users API (/api/v1/users)', async () => {
     });
 
     it('should return code 401 and proper error message if the user does not exist', async (t) => {
-      app = await buildTest(t);
+      app = await build(t);
       const username = `update06-${Date.now()}`;
       const email = `${username}@example.com`;
 
@@ -294,7 +294,7 @@ describe('Users API (/api/v1/users)', async () => {
     });
 
     it('should handle errors gracefully by returning 500 Internal Server Error with unexpected errors', async (t) => {
-      app = await buildTest(t);
+      app = await build(t);
       const username = `update07-${Date.now()}`;
       const email = `${username}@example.com`;
 
