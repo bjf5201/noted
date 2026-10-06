@@ -1,8 +1,9 @@
-import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import { describe, it } from 'node:test';
 import {
   buildEnvTest as build,
-  createEnvFixture
+  createEnvFixture,
+  loadPluginConfig
 } from 'noted/#/helpers/env-setup.js';
 
 describe('Env Plugin', () => {
@@ -23,20 +24,43 @@ describe('Env Plugin', () => {
     assert.equal(app.config.POSTGRES_DATABASE, 'env-plugin-test');
   });
 
-  it('loads configuration values from the specified env file', async (t) => {
+  it('loads configuration from a Node env file before plugin registration', async (t) => {
     const envFile = await createEnvFixture(
       t,
-      'POSTGRES_DATABASE=fixture-database\n'
+      'POSTGRES_DATABASE=fixture-database\nCOOKIE_SECRET=fixture-cookie-secret\n'
     );
 
-    const app = await build(t, {
-      data: {
-        COOKIE_SECRET: 'test-cookie-secret'
-      },
-      dotenv: { path: envFile }
+    const config = loadPluginConfig([envFile]);
+
+    assert.equal(config.POSTGRES_DATABASE, 'fixture-database');
+  });
+
+  it('prefers later Node env files over earlier files', async (t) => {
+    const earlierFile = await createEnvFixture(
+      t,
+      'POSTGRES_DATABASE=earlier-database\nCOOKIE_SECRET=fixture-cookie-secret\n'
+    );
+    const laterFile = await createEnvFixture(
+      t,
+      'POSTGRES_DATABASE=later-database\n'
+    );
+
+    const config = loadPluginConfig([earlierFile, laterFile]);
+
+    assert.equal(config.POSTGRES_DATABASE, 'later-database');
+  });
+
+  it('prefers pre-existing environment values over Node env files', async (t) => {
+    const envFile = await createEnvFixture(
+      t,
+      'POSTGRES_DATABASE=file-database\nCOOKIE_SECRET=fixture-cookie-secret\n'
+    );
+
+    const config = loadPluginConfig([envFile], {
+      POSTGRES_DATABASE: 'process-database'
     });
 
-    assert.equal(app.config.POSTGRES_DATABASE, 'fixture-database');
+    assert.equal(config.POSTGRES_DATABASE, 'process-database');
   });
 
   it.skip('UPLOAD_DIRNAME should not contain ".."'); // add this test when file-manager is implemented
