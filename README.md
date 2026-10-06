@@ -12,6 +12,21 @@ To work on this repo, follow the steps below.
 
 3. Begin editing!
 
+## Test Setup
+
+Create and migrate the dedicated test database when needed. Seed it before running tests that rely on the baseline users:
+
+```sh
+pnpm run db:create:t
+pnpm run db:migrate:t
+pnpm run db:seed:t
+pnpm run test
+```
+
+`db:create:t` is needed only if the test database does not exist; db:migrate:t applies schema migrations. Run db:seed:t after creating or resetting the test database, or whenever the baseline users need to be restored. Seeding truncates the user and role tables first, so only run it against the dedicated test database, never your development or production database.
+
+The seed script also requires `CAN_SEED_DATABASE=1`, which must be available from .env or the process environment. Use `pnpm run db:seed:t` rather than running the generic `db:seed` command so the script targets `noted_test`.
+
 ## Environment Configuration
 
 Keep configuration specific to the environment that consumes it. Node loads application settings when a script starts; Docker Compose configures the containers and the Postgres service. These are separate steps, and a Compose value already present in a container cannot be replaced by Node's `--env-file` option.
