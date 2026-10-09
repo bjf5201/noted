@@ -1,6 +1,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { sql } from 'drizzle-orm';
+import { seedUsers } from 'noted/shared/seed-users.ts';
 import { roles, userRoles, users } from 'noted/database/schema.js';
 import { scryptHash } from 'noted/plugins/app/password-manager.js';
 
@@ -22,7 +23,7 @@ async function seed() {
   try {
     const db = drizzle(pool);
     await truncateTables(db);
-    await seedUsers(db);
+    await seedDatabase(db);
   } catch (error) {
     console.error('Error seeding database:', error);
     process.exit(1);
@@ -37,7 +38,9 @@ async function truncateTables(db: ReturnType<typeof drizzle>) {
     await db.execute(sql`SET session_replication_role = 'replica'`);
 
     // Truncate all tables
-    await db.execute(sql`TRUNCATE TABLE ${sql.identifier('user_roles')} CASCADE`);
+    await db.execute(
+      sql`TRUNCATE TABLE ${sql.identifier('user_roles')} CASCADE`
+    );
     await db.execute(sql`TRUNCATE TABLE ${sql.identifier('users')} CASCADE`);
     await db.execute(sql`TRUNCATE TABLE ${sql.identifier('roles')} CASCADE`);
 
@@ -51,20 +54,14 @@ async function truncateTables(db: ReturnType<typeof drizzle>) {
   }
 }
 
-async function seedUsers(db: ReturnType<typeof drizzle>) {
-  const seedUsers = [
-    { username: 'basic', email: 'basic@example.com' },
-    { username: 'moderator', email: 'moderator@example.com' },
-    { username: 'admin', email: 'admin@example.com' }
-  ];
-
+async function seedDatabase(db: ReturnType<typeof drizzle>) {
   const hash = await scryptHash('Password123$');
 
   // The goal here is to create a role hierarchy
   // E.g. an admin should have all the roles, etc
   const rolesAccumulator: number[] = [];
 
-  for (const seedUser of seedUsers) {
+  for (const seedUser of Object.values(seedUsers)) {
     // Insert user
     const [insertedUser] = await db
       .insert(users)
