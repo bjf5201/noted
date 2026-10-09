@@ -1,4 +1,11 @@
-import { integer, pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core';
+import {
+  integer,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar
+} from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
@@ -24,11 +31,30 @@ export const userRoles = pgTable('user_roles', {
     .references(() => roles.id)
 });
 
+export const notes = pgTable('notes', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  title: varchar('title').notNull(),
+  content: text('content').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
 // Define relations for querying
 export const usersRelations = relations(users, ({ many }) => ({
-  roles: many(userRoles)
+  roles: many(userRoles),
+  notes: many(notes)
 }));
 
 export const rolesRelations = relations(roles, ({ many }) => ({
   users: many(userRoles)
+}));
+
+export const notesRelations = relations(notes, ({ one }) => ({
+  user: one(users, {
+    fields: [notes.userId],
+    references: [users.id]
+  })
 }));
