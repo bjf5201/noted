@@ -6,6 +6,9 @@ import Fastify, {
   LightMyRequestResponse
 } from 'fastify';
 import fp from 'fastify-plugin';
+import { eq } from 'drizzle-orm';
+import { LOGIN_ENDPOINT, NOTES_ENDPOINT, USERS_ENDPOINT } from './endpoints.js';
+import { users } from 'noted/database/schema.js';
 import { webApp } from 'noted/app.js';
 
 //type TestFastifyInstance = FastifyInstance & {
@@ -31,6 +34,36 @@ export function config() {
   };
 }
 
+// Create a user for testing
+export async function createUser(
+  app: FastifyInstance,
+  payload: Partial<{ email: string; username: string; password: string }>
+) {
+  return app.inject({
+    method: 'POST',
+    url: USERS_ENDPOINT,
+    payload
+  });
+}
+
+// Delete a user (used at end of tests which have created test users)
+export async function deleteUserByEmail(app: FastifyInstance, email: string) {
+  await app.db.delete(users).where(eq(users.email, email));
+}
+
+// Create a note
+export async function createNote(
+  app: FastifyInstance,
+  payload: Partial<{ title: string; content: string }>
+) {
+  return app.inject({
+    method: 'POST',
+    url: NOTES_ENDPOINT,
+    payload
+  });
+}
+
+// Expect for there to be a validation error
 export function expectValidationError(
   res: LightMyRequestResponse,
   expectedMessage: string
@@ -40,10 +73,11 @@ export function expectValidationError(
   assert.strictEqual(message, expectedMessage);
 }
 
+// Login with specific email for testing
 async function login(this: FastifyInstance, email: string) {
   const res = await this.inject({
     method: 'POST',
-    url: '/api/v1/auth/login',
+    url: LOGIN_ENDPOINT,
     payload: {
       email,
       password: 'Password123$'
@@ -73,6 +107,18 @@ async function injectWithLogin(
 
   return this.inject({
     ...opts
+  });
+}
+
+export async function updatePasswordWithLoginInjection(
+  app: FastifyInstance,
+  username: string,
+  payload: { currentPassword: string; newPassword: string }
+) {
+  return app.injectWithLogin(`${username}@example.com`, {
+    method: 'PATCH',
+    url: USERS_ENDPOINT,
+    payload
   });
 }
 

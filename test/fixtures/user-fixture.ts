@@ -1,0 +1,47 @@
+import { TestContext } from 'node:test';
+import {
+  buildTest,
+  createUser as createUserRequest,
+  deleteUserByEmail
+} from 'noted/#/helpers/setup.ts';
+
+interface UserPayload {
+  email: string;
+  username: string;
+  password: string;
+}
+
+export async function buildUserTest(t: TestContext) {
+  // Register one teardown hooks o cleanup runs before the app is closed.
+  // Don't pass `t` to buildTest here: this fixture owns the app lifecycle.
+  const app = await buildTest();
+  const createdEmails = new Set<string>();
+
+  t.after(async () => {
+    try {
+      // Delete only users created successfully through this fixture.
+      // Using a Set because it avoids attempting duplicate cleanup for the same email.
+      await Promise.all(
+        [...createdEmails].map((email) => deleteUserByEmail(app, email))
+      );
+    } finally {
+      // Close app even if database cleanup fails.
+      await app.close();
+    }
+  });
+
+  return {
+    app,
+    createUser: async (payload: UserPayload) => {
+      const reply = await createUserRequest(app, payload);
+
+      // Record the user only after the API confirms creation, so failed
+      // requests don't cause cleanup to target an unrelated existing user.
+      if (reply.statusCode === 201) {
+        createdEmails.add(payload.email);
+      }
+
+      return reply;
+    }
+  };
+}

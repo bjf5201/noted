@@ -1,9 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { buildTest, expectValidationError } from 'noted/#/helpers/setup.js';
-import { protectedRoutes } from 'noted/#/helpers/constants.js';
-
-const ENDPOINT = '/api/v1/auth/login';
+import { LOGIN_ENDPOINT, protectedRoutes } from 'noted/#/helpers/endpoints.js';
 
 describe('Auth API (/api/v1/auth)', () => {
   describe('POST /api/v1/auth/login (User login)', () => {
@@ -22,7 +20,7 @@ describe('Auth API (/api/v1/auth)', () => {
 
       const res = await app.inject({
         method: 'POST',
-        url: `${ENDPOINT}`,
+        url: `${LOGIN_ENDPOINT}`,
         payload: {
           email: 'basic@example.com',
           password: 'Password123$'
@@ -49,7 +47,7 @@ describe('Auth API (/api/v1/auth)', () => {
 
       const res = await app.injectWithLogin('basic@example.com', {
         method: 'POST',
-        url: `${ENDPOINT}`,
+        url: `${LOGIN_ENDPOINT}`,
         payload: invalidCredentials
       });
 
@@ -83,7 +81,7 @@ describe('Auth API (/api/v1/auth)', () => {
       for (const testData of testDataSet) {
         const res = await app.inject({
           method: 'POST',
-          url: `${ENDPOINT}`,
+          url: `${LOGIN_ENDPOINT}`,
           payload: {
             email: testData.email,
             password: testData.password

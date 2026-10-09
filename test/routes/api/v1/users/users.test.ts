@@ -2,47 +2,19 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { eq } from 'drizzle-orm';
 import { FastifyInstance } from 'fastify';
-import { buildTest as build } from 'noted/#/helpers/setup.js';
+import { AUTH_ENDPOINT, USERS_ENDPOINT } from 'noted/#/helpers/endpoints.js';
+import {
+  buildTest as build,
+  createUser,
+  deleteUserByEmail,
+  updatePasswordWithLoginInjection
+} from 'noted/#/helpers/setup.js';
 import { users } from 'noted/database/schema.js';
 
-const AUTH_ENDPOINT = '/api/v1/auth';
-const USERS_ENDPOINT = '/api/v1/users';
-
-async function createUser(
-  app: FastifyInstance,
-  payload: { email: string; username: string; password: string }
-) {
-  return app.inject({
-    method: 'POST',
-    url: USERS_ENDPOINT,
-    payload
-  });
-}
-
-async function deleteUserByEmail(
-  app: Awaited<ReturnType<typeof build>>,
-  email: string
-) {
-  await app.db.delete(users).where(eq(users.email, email));
-}
-
-async function updatePasswordWithLoginInjection(
-  app: FastifyInstance,
-  username: string,
-  payload: { currentPassword: string; newPassword: string }
-) {
-  return app.injectWithLogin(`${username}@example.com`, {
-    method: 'PATCH',
-    url: USERS_ENDPOINT,
-    payload
-  });
-}
-
 describe('Users API (/api/v1/users)', async () => {
-  // TODO: there are a lot of strings that could be constants. Create a constants file.
   let app: FastifyInstance;
 
-  describe.skip('POST /api/v1/users (Create new user)', () => {
+  describe('POST /api/v1/users (Create new user)', () => {
     it('can successfully create a user', async (t) => {
       app = await build(t);
       const username = `create-${Date.now()}`;
@@ -185,7 +157,7 @@ describe('Users API (/api/v1/users)', async () => {
           message: 'New password must not match current password.'
         });
       } finally {
-        deleteUserByEmail(app, email);
+        await deleteUserByEmail(app, email);
       }
     });
 
@@ -215,7 +187,7 @@ describe('Users API (/api/v1/users)', async () => {
           error: 'Bad Request'
         });
       } finally {
-        deleteUserByEmail(app, email);
+        await deleteUserByEmail(app, email);
       }
     });
 
@@ -237,7 +209,7 @@ describe('Users API (/api/v1/users)', async () => {
           message: 'Incorrect current password.'
         });
       } finally {
-        deleteUserByEmail(app, username);
+        await deleteUserByEmail(app, email);
       }
     });
 
@@ -275,7 +247,7 @@ describe('Users API (/api/v1/users)', async () => {
         // so the app verifies the session (but refuses request when user doesn't exist)
         const updateResponse = await app.inject({
           method: 'PATCH',
-          url: '/api/v1/users',
+          url: USERS_ENDPOINT,
           payload: {
             currentPassword: 'Password123$',
             newPassword: 'NewPassword123$'

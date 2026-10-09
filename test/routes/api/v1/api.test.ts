@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
+import { API_BASE_URL } from 'noted/#/helpers/endpoints.js';
 import { buildTest } from 'noted/#/helpers/setup.js';
 
 describe('API root (GET /api)', () => {
@@ -7,7 +8,7 @@ describe('API root (GET /api)', () => {
     const app = await buildTest(t);
 
     const response = await app.inject({
-      url: '/api/v1'
+      url: API_BASE_URL
     });
 
     assert.deepStrictEqual(JSON.parse(response.payload), {
@@ -21,7 +22,7 @@ describe('API root (GET /api)', () => {
     const app = await buildTest(t);
 
     const response = await app.injectWithLogin('basic@example.com', {
-      url: '/api/v1'
+      url: API_BASE_URL
     });
 
     assert.equal(response.statusCode, 200);
