@@ -4,7 +4,7 @@ import {
   buildEnvTest as build,
   createEnvFixture,
   loadPluginConfig
-} from 'noted/#/fixtures/env-fixture.ts';
+} from 'noted/#/fixtures/env-fixture.js';
 
 describe('Env Plugin', () => {
   // Use a minimal `data` object with the schema's required values and

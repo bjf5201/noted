@@ -7,7 +7,7 @@ import {
   deleteUserByEmail,
   updatePasswordWithLoginInjection
 } from 'noted/#/helpers/setup.js';
-import { buildUserTest } from 'noted/#/fixtures/user-fixture.ts';
+import { buildUserTest } from 'noted/#/fixtures/user-fixture.js';
 
 describe('Users API (/api/v1/users)', async () => {
   describe('POST /api/v1/users (Create new user)', () => {

@@ -5,7 +5,7 @@ import {
   //  createUser,
   //  expectValidationError
 } from 'noted/#/helpers/setup.js';
-import { buildNotesTest } from 'noted/#/fixtures/note-fixture.ts';
+import { buildNotesTest } from 'noted/#/fixtures/note-fixture.js';
 // import { notes } from 'noted/database/schema.js';
 import { NOTES_ENDPOINT } from 'noted/#/helpers/endpoints.js';
 

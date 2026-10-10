@@ -3,7 +3,7 @@ import {
   buildTest,
   createUser as createTestUser,
   deleteUserByEmail
-} from 'noted/#/helpers/setup.ts';
+} from 'noted/#/helpers/setup.js';
 
 interface UserPayload {
   email: string;

@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { sql } from 'drizzle-orm';
-import { seedUsers } from 'noted/shared/seed-users.ts';
+import { seedUsers } from 'noted/shared/seed-users.js';
 import { roles, userRoles, users } from 'noted/database/schema.js';
 import { scryptHash } from 'noted/plugins/app/password-manager.js';
 

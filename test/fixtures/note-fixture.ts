@@ -5,7 +5,7 @@ import {
   createUser,
   deleteNoteById,
   deleteUserByEmail
-} from 'noted/#/helpers/setup.ts';
+} from 'noted/#/helpers/setup.js';
 
 export async function buildNotesTest(t: TestContext) {
   const app = await buildTest();
