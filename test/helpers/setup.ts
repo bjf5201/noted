@@ -47,11 +47,6 @@ export async function createUser(
   return user;
 }
 
-// Delete a user (used at end of tests which have created test users)
-export async function deleteUserByEmail(app: FastifyInstance, email: string) {
-  await app.db.delete(users).where(eq(users.email, email));
-}
-
 // Create a note
 export async function createNote(
   app: FastifyInstance,
@@ -59,6 +54,15 @@ export async function createNote(
 ) {
   const [note] = await app.db.insert(notes).values(payload).returning();
   return note;
+}
+
+// Delete a user (used at end of tests which have created test users)
+export async function deleteUserByEmail(app: FastifyInstance, email: string) {
+  await app.db.delete(users).where(eq(users.email, email));
+}
+
+export async function deleteNoteById(app: FastifyInstance, noteId: number) {
+  await app.db.delete(notes).where(eq(notes.id, noteId));
 }
 
 // Expect for there to be a validation error
