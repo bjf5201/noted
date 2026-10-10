@@ -1,19 +1,11 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { eq } from 'drizzle-orm';
-import { notes } from 'noted/database/schema.ts';
+import { createNotesRepository } from 'noted/plugins/app/notes/notes-repository.js';
 
 const notesRoutes: FastifyPluginAsync = async (fastify) => {
-  fastify.get('/', async (request) => {
-    const userId = request.session.user.id;
+  const notesRepository = createNotesRepository(fastify);
 
-    return fastify.db
-      .select({
-        id: notes.id,
-        title: notes.title,
-        content: notes.content
-      })
-      .from(notes)
-      .where(eq(notes.userId, userId));
+  fastify.get('/', async (request) => {
+    return notesRepository.findByUserId(request.session.user.id);
   });
 };
 
