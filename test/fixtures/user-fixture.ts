@@ -1,7 +1,7 @@
 import { TestContext } from 'node:test';
 import {
   buildTest,
-  createUser as createUserRequest,
+  createUser as createTestUser,
   deleteUserByEmail
 } from 'noted/#/helpers/setup.ts';
 
@@ -32,16 +32,11 @@ export async function buildUserTest(t: TestContext) {
 
   return {
     app,
+    trackUserEmail: (email: string) => createdEmails.add(email),
     createUser: async (payload: UserPayload) => {
-      const reply = await createUserRequest(app, payload);
-
-      // Record the user only after the API confirms creation, so failed
-      // requests don't cause cleanup to target an unrelated existing user.
-      if (reply.statusCode === 201) {
-        createdEmails.add(payload.email);
-      }
-
-      return reply;
+      const user = await createTestUser(app, payload);
+      createdEmails.add(user.email);
+      return user;
     }
   };
 }

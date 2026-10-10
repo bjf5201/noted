@@ -7,8 +7,8 @@ import Fastify, {
 } from 'fastify';
 import fp from 'fastify-plugin';
 import { eq } from 'drizzle-orm';
-import { LOGIN_ENDPOINT, NOTES_ENDPOINT, USERS_ENDPOINT } from './endpoints.js';
-import { users } from 'noted/database/schema.js';
+import { LOGIN_ENDPOINT, USERS_ENDPOINT } from './endpoints.js';
+import { notes, users } from 'noted/database/schema.js';
 import { webApp } from 'noted/app.js';
 
 //type TestFastifyInstance = FastifyInstance & {
@@ -37,13 +37,14 @@ export function config() {
 // Create a user for testing
 export async function createUser(
   app: FastifyInstance,
-  payload: Partial<{ email: string; username: string; password: string }>
+  payload: { email: string; username: string; password: string }
 ) {
-  return app.inject({
-    method: 'POST',
-    url: USERS_ENDPOINT,
-    payload
-  });
+  const password = await app.passwordManager.hash(payload.password);
+  const [user] = await app.db
+    .insert(users)
+    .values({ ...payload, password })
+    .returning();
+  return user;
 }
 
 // Delete a user (used at end of tests which have created test users)
@@ -54,13 +55,10 @@ export async function deleteUserByEmail(app: FastifyInstance, email: string) {
 // Create a note
 export async function createNote(
   app: FastifyInstance,
-  payload: Partial<{ title: string; content: string }>
+  payload: { userId: number; title: string; content: string }
 ) {
-  return app.inject({
-    method: 'POST',
-    url: NOTES_ENDPOINT,
-    payload
-  });
+  const [note] = await app.db.insert(notes).values(payload).returning();
+  return note;
 }
 
 // Expect for there to be a validation error
