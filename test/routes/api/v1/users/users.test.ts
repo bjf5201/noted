@@ -12,19 +12,23 @@ import { buildUserTest } from 'noted/#/fixtures/user-fixture.ts';
 describe('Users API (/api/v1/users)', async () => {
   describe('POST /api/v1/users (Create new user)', () => {
     it('can successfully create a user', async (t) => {
-      const { app, createUser } = await buildUserTest(t);
+      const { app, trackUserEmail } = await buildUserTest(t);
       const username = `create-${Date.now()}`;
       const email = `${username}@example.com`;
 
-      const reply = await createUser({
-        email,
-        username,
-        password: 'Password123$'
+      const reply = await app.inject({
+        method: 'POST',
+        url: USERS_ENDPOINT,
+        payload: {
+          email,
+          username,
+          password: 'Password123$'
+        }
       });
+      assert.strictEqual(reply.statusCode, 201);
+      trackUserEmail(email);
 
       const response = JSON.parse(reply.payload);
-
-      assert.strictEqual(reply.statusCode, 201);
       assert.strictEqual(typeof response.id, 'number');
       assert.ok(response.id > 0);
 
@@ -100,12 +104,11 @@ describe('Users API (/api/v1/users)', async () => {
       const username = `update02-${Date.now()}`;
       const email = `${username}@example.com`;
 
-      const createReply = await createUser({
+      await createUser({
         username,
         email,
         password: 'Password123$'
       });
-      assert.strictEqual(createReply.statusCode, 201);
 
       const reply = await updatePasswordWithLoginInjection(app, username, {
         currentPassword: 'Password123$',
@@ -124,12 +127,11 @@ describe('Users API (/api/v1/users)', async () => {
       const username = `update03-${Date.now()}`;
       const email = `${username}@example.com`;
 
-      const createReply = await createUser({
+      await createUser({
         username,
         email,
         password: 'Password123$'
       });
-      assert.strictEqual(createReply.statusCode, 201);
 
       const reply = await updatePasswordWithLoginInjection(app, username, {
         currentPassword: 'Password123$',
@@ -149,12 +151,11 @@ describe('Users API (/api/v1/users)', async () => {
       const username = `update04-${Date.now()}`;
       const email = `${username}@example.com`;
 
-      const createReply = await createUser({
+      await createUser({
         email,
         username,
         password: 'Password123$'
       });
-      assert.strictEqual(createReply.statusCode, 201);
 
       const reply = await updatePasswordWithLoginInjection(app, username, {
         currentPassword: 'Password123$',
@@ -176,12 +177,11 @@ describe('Users API (/api/v1/users)', async () => {
       const username = `update05-${Date.now()}`;
       const email = `${username}@example.com`;
 
-      const createReply = await createUser({
+      await createUser({
         username,
         email,
         password: 'Password123$'
       });
-      assert.strictEqual(createReply.statusCode, 201);
 
       const reply = await updatePasswordWithLoginInjection(app, username, {
         currentPassword: 'WrongPassword123$',
@@ -201,12 +201,11 @@ describe('Users API (/api/v1/users)', async () => {
       const email = `${username}@example.com`;
 
       // Create a valid user and log them in so the app has a real, authenticated session
-      const createReply = await createUser({
+      await createUser({
         username,
         email,
         password: 'Password123$'
       });
-      assert.strictEqual(createReply.statusCode, 201);
 
       const loginReply = await app.injectWithLogin(email, {
         method: 'POST',
@@ -253,12 +252,11 @@ describe('Users API (/api/v1/users)', async () => {
       const username = `update07-${Date.now()}`;
       const email = `${username}@example.com`;
 
-      const createReply = await createUser({
+      await createUser({
         username,
         email,
         password: 'Password123$'
       });
-      assert.strictEqual(createReply.statusCode, 201);
 
       const { mock: mockHash } = t.mock.method(app.passwordManager, 'hash');
 
