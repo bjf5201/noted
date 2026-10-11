@@ -1,5 +1,5 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
-import { authSchema } from 'noted/schemas/auth.js';
+import { authSchema } from '../../../../schemas/auth.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { usersRepository, passwordManager } = fastify;

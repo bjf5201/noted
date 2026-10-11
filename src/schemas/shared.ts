@@ -22,9 +22,13 @@ export const SuccessResponse = Type.Object(
   }
 );
 
-export const StringSchema = Type.String({
+export const ShortStringSchema = Type.String({
   minLength: 1,
   maxLength: 255
+});
+
+export const LongStringSchema = Type.String({
+  minLength: 1
 });
 
 export const EmailSchema = Type.String({

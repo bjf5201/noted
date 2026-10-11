@@ -2,13 +2,13 @@ import { Static, Type } from 'typebox';
 import {
   EmailSchema,
   ErrorResponse,
-  StringSchema,
+  ShortStringSchema,
   SuccessResponse
-} from 'noted/schemas/shared.js';
+} from './shared.js';
 
 const CredentialsSchema = Type.Object({
   email: EmailSchema,
-  password: StringSchema
+  password: ShortStringSchema
 });
 
 const authResponseSchema = {

@@ -2,7 +2,7 @@ import { Type } from 'typebox';
 import {
   EmailSchema,
   ErrorResponse,
-  StringSchema,
+  ShortStringSchema,
   SuccessResponse
 } from './shared.js';
 
@@ -16,20 +16,20 @@ const PasswordSchema = Type.String({
 });
 
 const CreateUserBodySchema = Type.Object({
-  username: StringSchema,
+  username: ShortStringSchema,
   email: EmailSchema,
   password: PasswordSchema
 });
 
 const UpdateCredentialsBodySchema = Type.Object({
-  currentPassword: StringSchema,
+  currentPassword: ShortStringSchema,
   newPassword: PasswordSchema
 });
 
 const UserResponse = Type.Object({
   id: Type.Integer(),
-  username: StringSchema,
-  email: StringSchema
+  username: ShortStringSchema,
+  email: ShortStringSchema
 });
 
 // POST /users
