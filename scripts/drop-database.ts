@@ -19,7 +19,9 @@ async function dropDatabase() {
   try {
     await connection.connect();
     await dropDB(connection);
-    console.log(`Database ${process.env.POSTGRES_DATABASE} has been dropped successfully.`);
+    console.log(
+      `Database ${process.env.POSTGRES_DATABASE} has been dropped successfully.`
+    );
   } catch (error) {
     console.error('Error dropping database:', error);
   } finally {
@@ -28,7 +30,9 @@ async function dropDatabase() {
 }
 
 async function dropDB(connection: Client) {
-  await connection.query(`DROP DATABASE IF EXISTS "${process.env.POSTGRES_DATABASE}"`);
+  await connection.query(
+    `DROP DATABASE IF EXISTS "${process.env.POSTGRES_DATABASE}"`
+  );
   console.log(`Database ${process.env.POSTGRES_DATABASE} dropped.`);
 }
 

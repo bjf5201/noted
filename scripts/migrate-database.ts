@@ -14,7 +14,10 @@ async function doMigration(): Promise<void> {
 
   try {
     const db = drizzle(pool);
-    const migrationsFolder = path.join(import.meta.dirname, '../src/database/migrations');
+    const migrationsFolder = path.join(
+      import.meta.dirname,
+      '../src/database/migrations'
+    );
 
     console.log('Running migrations...');
     await migrate(db, { migrationsFolder });
