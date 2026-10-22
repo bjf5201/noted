@@ -41,7 +41,7 @@
     "lint": "eslint . --fix --cache --no-warn-ignored --max-warnings 0 --no-error-on-unmatched-pattern",
     "format:check": "prettier \"**/*\" --check --ignore-unknown --cache",
     "format": "prettier \"**/*\" --write --ignore-unknown --cache",
-    "check": "pnpm run typecheck && pnpm run lint && pnpm run format",
+    "check": "pnpm run typecheck && pnpm run lint:check && pnpm run format:check",
     "test": "tsx --env-file=.env --env-file=.env.test --test **/*.test.ts",
     "build": "tsc -p tsconfig.build.json",
     "db:create": "tsx --env-file=.env ./scripts/create-database.ts",
