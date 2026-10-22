@@ -7,7 +7,10 @@ export type AppOptions = {
   // Add custom options for app below here
 } & Partial<AutoloadPluginOptions>;
 
-export async function webApp(fastify: FastifyInstance, opts: FastifyPluginOptions) {
+export async function webApp(
+  fastify: FastifyInstance,
+  opts: FastifyPluginOptions
+) {
   delete opts.skipOverride;
   // Register external plugins first, since they need to be available to application-specific plugins
   await fastify.register(fastifyAutoload, {
