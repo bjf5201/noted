@@ -9,8 +9,8 @@ import {
 } from 'noted/#/helpers/setup.js';
 import { buildUserTest } from 'noted/#/fixtures/user-fixture.js';
 
-describe('Users API (/api/v1/users)', async () => {
-  describe('POST /api/v1/users (Create new user)', () => {
+describe('Users API (/api/v1/user)', async () => {
+  describe('POST /api/v1/user (Create new user)', () => {
     it('can successfully create a user', async (t) => {
       const { app, trackUserEmail } = await buildUserTest(t);
       const username = `create-${Date.now()}`;
@@ -42,7 +42,7 @@ describe('Users API (/api/v1/users)', async () => {
     });
   });
 
-  describe('PATCH /api/v1/users (Update user)', async () => {
+  describe('PATCH /api/v1/user (Update user)', async () => {
     it('Enforces rate limiting, allowing no more than 3 password update attempts per minute', async (t) => {
       const { app, createUser } = await buildUserTest(t);
       const username = `update01-${Date.now()}`;
