@@ -1,0 +1,451 @@
+openapi: 3.1.0
+info:
+  title: noted API
+  version: 1.0.0
+  description: REST API for a Markdown notes application.
+servers:
+  - url: /api/v1
+tags:
+  - name: Authentication
+  - name: Users
+  - name: Notes
+paths:
+  /user:
+    post:
+      tags:
+        - Users
+      summary: Register a user
+      operationId: registerUser
+      requestBody:
+        $ref: "#/components/schemas/RegisterUserRequest"
+      responses:
+        "201":
+          description: Success; User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "default":
+          $ref: "#/components/responses/BadRequest"
+    get:
+      tags:
+        - User
+      summary: Get user's profile
+      operationId: getUser
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    patch:
+      tags:
+        - User
+      summary: Update a user's profile
+      operationId: updateUser
+      security:
+        - sessionCookie: []
+      requestBody:
+        $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Log in
+      operationId: login
+      requestBody:
+        $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful; establishes a session cookie
+          headers:
+            Set-Cookie:
+              description: Session cookie
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Log out
+      operationId: logout
+      security:
+        - sessionCookie: []
+      responses:
+        "204":
+          description: Logged out; session cookie cleared
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /auth/session:
+    get:
+      tags:
+        - Authentication
+      summary: Get current session
+      operationId: getSession
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Authenticated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /notes:
+    get:
+      tags:
+        - Notes
+      summary: List active notes
+      operationId: listNotes
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Notes ordered by creation date, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NoteSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags:
+        - Notes
+      summary: Create a note
+      operationId: createNote
+      security:
+        - sessionCookie: []
+      requestBody:
+        $ref: "#/components/requestBodies/CreateNoteRequest"
+      responses:
+        "201":
+          description: Note created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /notes/{id}:
+    parameters:
+      - $ref: "#/components/parameters/NoteId"
+    get:
+      tags:
+        - Notes
+      summary: Get a note
+      operationId: getNote
+      security:
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Note found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags:
+        - Notes
+      summary: Update a note
+      operationId: updateNote
+      security:
+        - sessionCookie: []
+      requestBody:
+        $ref: "#/components/requestBodies/UpdateNoteRequest"
+      responses:
+        "200":
+          description: Note updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteSummary"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      tags:
+        - Notes
+      summary: Move a note to Trash
+      operationId: trashNote
+      security:
+        - sessionCookie: []
+      responses:
+        "204":
+          description: Note moved to Trash
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+components:
+  parameters:
+    NoteId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session
+  schemas:
+    UserSummary:
+      type: object
+      additionalProperties: false
+      required: [id, username, email]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+    UserProfile:
+      allOf:
+        - $ref: "#/components/schemas/UserSummary"
+        - type: object
+          required: [dateRegistered]
+          properties:
+            dateRegistered:
+              type: string
+              format: date-time
+            dateUpdated:
+              type: string
+              format: date-time
+    NoteSummary:
+      type: object
+      additionalProperties: false
+      required: [id, title, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Note:
+      allOf:
+        - $ref: "#/components/schemas/NoteSummary"
+        - type: object
+          required: [content]
+          properties:
+            content:
+              type: string
+              maxLength: 100000
+    Error:
+      type: object
+      additionalProperties: false
+      required: [statusCode, error, message]
+      properties:
+        statusCode:
+          type: integer
+          minimum: 100
+          maximum: 600
+        error:
+          type: string
+        message:
+          type: string
+    ExtendedError:
+      allOf:
+        - $ref: "#/components/schemas/Error"
+        - type: object
+          required: [rootCause]
+          properties:
+            rootCause:
+              type: string
+  requestBodies:
+    RegisterUserRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [username, email, password]
+            properties:
+              username:
+                type: string
+                minLength: 1
+              email:
+                type: string
+                format: email
+              password:
+                type: string
+                minLength: 1
+    UpdateUserRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            minProperties: 1
+            properties:
+              username:
+                type: string
+              email:
+                type: string
+                format: email
+              newPassword:
+                type: string
+    LoginRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [email, password]
+            properties:
+              email:
+                type: string
+                format: email
+              password:
+                type: string
+                minLength: 1
+    CreateNoteRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [title, content]
+            properties:
+              title:
+                type: string
+                minLength: 1
+                maxLength: 200
+                description: Trim surrounding whitespace before validating.
+              content:
+                type: string
+                maxLength: 100000
+                description: May be empty. Preserve leading whitespace and trim trailing whitespace before validating.
+    UpdateNoteRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            minProperties: 1
+            properties:
+              title:
+                type: string
+                minLength: 1
+                maxLength: 200
+                description: If supplied, trim surrounding whitespace before validating.
+              content:
+                type: string
+                maxLength: 100000
+                description: If supplied, may be empty. Preserve leading whitespace and trim trailing whitespace before validating.
+  responses:
+    BadRequest:
+      description: Invalid request or validation failure
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ExtendedError"
+          example:
+            statusCode: 400
+            error: Bad Request
+            message: Request validation failed.
+            rootCause: "Missing title"
+    Unauthorized:
+      description: Authentication required or credentials invalid
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            statusCode: 401
+            error: Unauthorized
+            message: You must be authenticated to access this route.
+    NotFound:
+      description: Resource not found or not accessible to this user
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            statusCode: 404
+            error: Not Found
+            message: Note not found.
+    Conflict:
+      description: A resource conflicts with existing data
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            statusCode: 409
+            error: Conflict
+            message: A note with this title already exists.
