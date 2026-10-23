@@ -20,11 +20,7 @@ paths:
         $ref: "#/components/schemas/RegisterUserRequest"
       responses:
         "201":
-          description: Success; User created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserSummary"
+          $ref: "#/components/responses/Created"
         "400":
           $ref: "#/components/responses/BadRequest"
         "409":
@@ -50,12 +46,12 @@ paths:
     patch:
       tags:
         - User
-      summary: Update a user's profile
-      operationId: updateUser
+      summary: Update user's password
+      operationId: updatePassword
       security:
         - sessionCookie: []
       requestBody:
-        $ref: "#/components/schemas/UpdateUserRequest"
+        $ref: "#/components/requestBodies/UpdatePasswordRequest"
       responses:
         "200":
           description: User profile updated successfully
@@ -163,11 +159,7 @@ paths:
         $ref: "#/components/requestBodies/CreateNoteRequest"
       responses:
         "201":
-          description: Note created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NoteSummary"
+          $ref: "#/components/responses/Created"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -321,6 +313,15 @@ components:
           properties:
             rootCause:
               type: string
+    Success:
+      type: object
+      additionalProperties: false
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
   requestBodies:
     RegisterUserRequest:
       required: true
@@ -340,20 +341,17 @@ components:
               password:
                 type: string
                 minLength: 1
-    UpdateUserRequest:
+    UpdatePasswordRequest:
       required: true
       content:
         application/json:
           schema:
             type: object
             additionalProperties: false
-            minProperties: 1
+            required: [oldPassword, newPassword]
             properties:
-              username:
+              oldPassword:
                 type: string
-              email:
-                type: string
-                format: email
               newPassword:
                 type: string
     LoginRequest:
@@ -449,3 +447,12 @@ components:
             statusCode: 409
             error: Conflict
             message: A note with this title already exists.
+    Created:
+      description: Resource successfully created
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Success"
+          example:
+            success: true
+            message: "Note successfully created"
