@@ -73,7 +73,7 @@ See the [OpenAPI document](./openapi.yaml)
 
 - Base path => n `/api/v1` prefix
 - Data formats => JSON requests and responses, via TypeBox and `@fastify/typebox-type-provider`
-- Authentication => session cookie or JWT TODO: Decide session cookies vs JWT
+- Authentication => session cookie
 - Resource identifiers => Numeric IDs
 - Single `content` field for Markdown note content
 
