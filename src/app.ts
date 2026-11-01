@@ -1,6 +1,7 @@
 import { join } from 'node:path';
-import { FastifyError, FastifyInstance, FastifyPluginOptions } from 'fastify';
+import { FastifyInstance, FastifyPluginOptions } from 'fastify';
 import fastifyAutoload, { type AutoloadPluginOptions } from '@fastify/autoload';
+import { errorHandler } from './lib/error-handler.js';
 
 export type AppOptions = {
   skipOverride: boolean;
@@ -34,27 +35,5 @@ export async function webApp(
     }
   });
 
-  fastify.setErrorHandler((err: FastifyError, request, reply) => {
-    fastify.log.error(
-      {
-        err,
-        request: {
-          method: request.method,
-          url: request.url,
-          query: request.query,
-          params: request.params
-        }
-      },
-      'Unhandled error occurred within Fastify app'
-    );
-
-    reply.code(err.statusCode ?? 500);
-
-    let message = 'Internal Server Error';
-    if (err.statusCode && err.statusCode < 500) {
-      message = err.message;
-    }
-
-    return { message };
-  });
+  fastify.setErrorHandler(errorHandler);
 }
