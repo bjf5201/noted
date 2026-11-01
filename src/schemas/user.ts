@@ -4,7 +4,7 @@ import {
   PasswordSchema,
   ShortStringSchema
 } from './shared/patterns.js';
-import { ApiFailureSchema, ApiSuccessSchema } from './shared/response.js';
+import { ApiFailureSchema, ApiSuccessSchema } from './shared/api.js';
 
 const CreateUserBodySchema = Type.Object({
   username: ShortStringSchema,

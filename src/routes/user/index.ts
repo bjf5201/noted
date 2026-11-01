@@ -16,7 +16,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       if (isExistingUser) {
         return reply.code(409).send({
           success: false,
-          statusCode: reply.statusCode,
+          code: 409,
           error: 'A user with this email already exists.'
         });
       }
@@ -52,7 +52,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       if (!user) {
         return reply.code(401).send({
           success: false,
-          statusCode: 401,
+          code: 401,
           error: 'User does not exist.'
         });
       }
@@ -65,7 +65,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       if (!isPasswordCorrect) {
         return reply.code(401).send({
           success: false,
-          statusCode: 401,
+          code: 401,
           error: 'Incorrect current password.'
         });
       }
@@ -74,7 +74,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         reply.status(400);
         return {
           success: false,
-          statusCode: 400,
+          code: 400,
           error: 'New password must not match current password.'
         };
       }
@@ -85,7 +85,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       reply.status(200);
       return {
         success: true,
-        statusCode: 200,
+        code: 200,
         message: 'Password updated successfully!'
       };
     }
