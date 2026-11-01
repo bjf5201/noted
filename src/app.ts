@@ -29,7 +29,9 @@ export async function webApp(
     dir: join(import.meta.dirname, 'routes'),
     autoHooks: true,
     cascadeHooks: true,
-    options: { ...opts }
+    options: {
+      prefix: '/api/v1'
+    }
   });
 
   fastify.setErrorHandler((err: FastifyError, request, reply) => {

@@ -1,8 +1,5 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
-import {
-  CreateUserSchema,
-  UpdateUserSchema
-} from '../../../../schemas/user.js';
+import { CreateUserSchema, UpdateUserSchema } from 'noted/schemas/user.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { usersRepository, passwordManager } = fastify;
@@ -18,8 +15,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       if (isExistingUser) {
         return reply.code(409).send({
+          success: false,
           statusCode: reply.statusCode,
-          message: 'A user with this email already exists.'
+          error: 'A user with this email already exists.'
         });
       }
 
@@ -52,7 +50,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const user = await usersRepository.findByEmail(email);
 
       if (!user) {
-        return reply.code(401).send({ message: 'User does not exist.' });
+        return reply.code(401).send({
+          success: false,
+          statusCode: 401,
+          error: 'User does not exist.'
+        });
       }
 
       const isPasswordCorrect = await passwordManager.compare(
@@ -61,19 +63,31 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       );
 
       if (!isPasswordCorrect) {
-        return reply.code(401).send({ message: 'Incorrect current password.' });
+        return reply.code(401).send({
+          success: false,
+          statusCode: 401,
+          error: 'Incorrect current password.'
+        });
       }
 
       if (newPassword === currentPassword) {
         reply.status(400);
-        return { message: 'New password must not match current password.' };
+        return {
+          success: false,
+          statusCode: 400,
+          error: 'New password must not match current password.'
+        };
       }
 
       const hashedPassword = await passwordManager.hash(newPassword);
       await usersRepository.updatePassword(email, hashedPassword);
 
       reply.status(200);
-      return { success: true, message: 'Password updated successfully!' };
+      return {
+        success: true,
+        statusCode: 200,
+        message: 'Password updated successfully!'
+      };
     }
   );
 };

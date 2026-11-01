@@ -10,7 +10,7 @@ import {
 import { buildUserTest } from 'noted/#/fixtures/user-fixture.js';
 
 describe('Users API (/api/v1/user)', async () => {
-  describe('POST /api/v1/user (Create new user)', () => {
+  describe('POST /api/v1/user (Sign up new user)', () => {
     it('can successfully create a user', async (t) => {
       const { app, trackUserEmail } = await buildUserTest(t);
       const username = `create-${Date.now()}`;
