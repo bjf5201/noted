@@ -1,19 +1,10 @@
 import { Type } from 'typebox';
 import {
   EmailSchema,
-  ErrorResponse,
-  ShortStringSchema,
-  SuccessResponse
-} from './shared.js';
-
-const passwordPattern =
-  '^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).*$';
-
-const PasswordSchema = Type.String({
-  pattern: passwordPattern,
-  minLength: 8,
-  maxLength: 255
-});
+  PasswordSchema,
+  ShortStringSchema
+} from './shared/patterns.js';
+import { ApiFailureSchema, ApiSuccessSchema } from './shared/response.js';
 
 const CreateUserBodySchema = Type.Object({
   username: ShortStringSchema,
@@ -42,8 +33,8 @@ export const CreateUserSchema = {
     201: Type.Object({
       id: Type.Integer()
     }),
-    409: ErrorResponse,
-    500: ErrorResponse
+    409: ApiFailureSchema,
+    500: ApiFailureSchema
   }
 };
 
@@ -54,8 +45,8 @@ export const GetAllUsersSchema = {
   description: 'Get all users',
   response: {
     200: Type.Array(UserResponse),
-    400: ErrorResponse,
-    404: ErrorResponse
+    400: ApiFailureSchema,
+    404: ApiFailureSchema
   }
 };
 
@@ -68,9 +59,9 @@ export const GetUserSchema = {
     userId: Type.Integer({ minimum: 1, description: 'User ID' })
   }),
   response: {
-    200: UserResponse,
-    400: ErrorResponse,
-    404: ErrorResponse
+    200: ApiSuccessSchema,
+    400: ApiFailureSchema,
+    404: ApiFailureSchema
   }
 };
 
@@ -81,9 +72,9 @@ export const UpdateUserSchema = {
   description: "Update the user's password",
   body: UpdateCredentialsBodySchema,
   response: {
-    200: SuccessResponse,
-    400: ErrorResponse,
-    401: ErrorResponse,
-    429: ErrorResponse
+    200: ApiSuccessSchema,
+    400: ApiFailureSchema,
+    401: ApiFailureSchema,
+    429: ApiFailureSchema
   }
 };
