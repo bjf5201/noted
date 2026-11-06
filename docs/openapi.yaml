@@ -1,889 +1,1225 @@
 openapi: 3.2.0
-
 info:
-  title: noted API
+  contact:
+    email: "contact@bethanyfannin.com"
+  title: Noted API
   version: 1.0.0
-  description: >
-    A Markdown notes API for creating, sharing, discovering,
-    liking, and saving notes.
+  description: API for Noted. All paths are relative to the `/api/v1` prefix. Successful JSON responses use a `data` and `meta` envelope. Error responses use an `error` and `meta` envelope. Image uploads use `multipart/form-data`; other request bodies use JSON.
 
 servers:
-  - url: http://localhost:3000/api/v1
-    description: Local development
+  - url: /api/v1
 
 tags:
   - name: Authentication
+  - name: Account
   - name: Users
   - name: Profiles
   - name: Preferences
   - name: Notes
-  - name: Relationships
+  - name: Follows
+  - name: Likes
+  - name: Saves
+
+security:
+  - SessionCookie: []
 
 paths:
   /auth/register:
     post:
       tags: [Authentication]
-      summary: Register a new account
-      operationId: registerUser
+      summary: Register user
+      description: Register a user account
+      operationId: register
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [email, username, password]
-              properties:
-                email:
-                  type: string
-                  format: email
-                username:
-                  type: string
-                  minLength: 3
-                  maxLength: 100
-                password:
-                  type: string
-                  format: password
-                  minLength: 8
+              $ref: "#/components/schemas/Requests/RegisterRequest"
       responses:
         "201":
-          description: Account created
+          description: User account created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/Envelopes/UserEnvelope"
         "400":
           $ref: "#/components/responses/BadRequest"
         "409":
           $ref: "#/components/responses/Conflict"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /auth/session:
     post:
       tags: [Authentication]
-      summary: Log in and create a session
+      summary: Login user & create session
+      description: Log in and establish an authenticated session
       operationId: createSession
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [email, password]
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                  format: password
+              $ref: "#/components/schemas/Requests/LoginRequest"
       responses:
         "200":
-          description: Authenticated; sets the session cookie
+          description: Session established
           headers:
             Set-Cookie:
-              description: HttpOnly session cookie
+              description: Session cookie set by the server.
               schema:
                 type: string
           content:
             application/json:
               schema:
-                type: object
-                required: [user]
-                properties:
-                  user:
-                    $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/Envelopes/UserEnvelope"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     delete:
       tags: [Authentication]
-      summary: Log out and invalidate the session
+      summary: Log out; delete session
+      description: Log out and invalidate the current session
       operationId: deleteSession
-      security:
-        - sessionCookie: []
       responses:
         "204":
-          description: Session invalidated and cookie cleared
+          description: Session invalidated; response has no body
         "401":
           $ref: "#/components/responses/Unauthorized"
-
-  /users/me:
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /users/account:
     get:
-      tags: [Users]
-      summary: Get the current account
-      operationId: getCurrentUser
-      security:
-        - sessionCookie: []
+      tags: [Account]
+      summary: Get current user account
+      description: Get the authenticated user's account details
+      operationId: getAccount
       responses:
         "200":
-          description: Current account
+          description: Account details
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/Envelopes/UserEnvelope"
         "401":
           $ref: "#/components/responses/Unauthorized"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     patch:
-      tags: [Users]
+      tags: [Account]
       summary: Update account details
-      operationId: updateCurrentUser
-      security:
-        - sessionCookie: []
+      description: Update specific account details for the authenticated user
+      operationId: updateAccount
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              minProperties: 1
-              properties:
-                email:
-                  type: string
-                  format: email
-                username:
-                  type: string
-                  minLength: 1
+              $ref: "#/components/schemas/Requests/UpdateAccountRequest"
       responses:
         "200":
           description: Account updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/Envelopes/UserEnvelope"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "409":
           $ref: "#/components/responses/Conflict"
-
-  /users/{username}/profile:
-    parameters:
-      - $ref: "#/components/parameters/Username"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /users:
     get:
-      tags: [Profiles]
-      summary: Get a public user profile
-      operationId: getUserProfile
+      tags: [Users]
+      description: List all public user's as an array; showing a summary for each user including their user id, username, and profile image.
+      summary: List users
+      operationId: listUsers
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
       responses:
         "200":
-          description: User profile
+          description: Public users; an empty collection is returned when none exist
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Profile"
+                $ref: "#/components/schemas/Envelopes/UserSummaryListEnvelope"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /users/{userId}:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    get:
+      tags: [Users]
+      description: Get basic information about a user by their user ID
+      summary: Get user by ID
+      operationId: getUser
+      responses:
+        "200":
+          description: User information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelopes/UserEnvelope"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-
-  /users/me/profile:
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /users/{userId}/profile:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    get:
+      tags: [Profiles]
+      summary: Get a user's public profile
+      description: Get a user's public profile information (name, bio, summary, keywords, profileImage, profile creation date and date of last profile update) using their user id
+      operationId: getPublicProfile
+      responses:
+        "200":
+          description: Public profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelopes/ProfileWithUserEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /users/profile:
+    get:
+      tags: [Profiles]
+      summary: Get the authenticated user's profile
+      description: Get the public profile of the currently authenticated user
+      operationId: getOwnProfile
+      responses:
+        "200":
+          description: Own profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelopes/ProfileWithUserEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     put:
       tags: [Profiles]
-      summary: Create or replace the current profile
-      operationId: replaceCurrentProfile
-      security:
-        - sessionCookie: []
+      summary: Create or replace the authenticated user's profile
+      description: Replaces the profile. `profileImage` is an uploaded image file;`profileImageUri` is returned by read operations. Use `resetProfileImage` to restore the default image. Do not send both `profileImage` and `resetProfileImage` in the same request.
+
+      operationId: replaceOwnProfile
       requestBody:
         required: true
         content:
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/ProfileUpload"
+              $ref: "#/components/schemas/Requests/ReplaceProfileRequest"
             encoding:
-              keywords:
-                contentType: application/json
               profileImage:
-                contentType: image/jpeg, image/png, image/webp
+                contentType: image/*
       responses:
         "200":
-          description: Profile created or replaced
+          description: Profile replaced
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Profile"
+                $ref: "#/components/schemas/Envelopes/ProfileEnvelope"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
-
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     patch:
       tags: [Profiles]
       summary: Update selected profile fields
-      operationId: updateCurrentProfile
-      security:
-        - sessionCookie: []
+      description: Only supplied fields are changed. `profileImage` is an uploaded image file; `profileImageUri` is returned by read operations. Use `resetProfileImage` to restore the default image. Do not send both `profileImage` and `resetProfileImage` in the same request.
+      operationId: updateOwnProfile
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: "#/components/schemas/ProfileUpload"
+              $ref: "#/components/schemas/Requests/UpdateProfileRequest"
             encoding:
-              keywords:
-                contentType: application/json
               profileImage:
-                contentType: image/jpeg, image/png, image/webp
+                contentType: image/*
       responses:
         "200":
           description: Profile updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Profile"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-
-  /users/me/preferences:
-    get:
-      tags: [Preferences]
-      summary: Get account preferences
-      operationId: getPreferences
-      security:
-        - sessionCookie: []
-      responses:
-        "200":
-          description: Current preferences
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Preferences"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-
-    patch:
-      tags: [Preferences]
-      summary: Update account preferences
-      operationId: updatePreferences
-      security:
-        - sessionCookie: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [defaultNoteVisibility]
-              properties:
-                defaultNoteVisibility:
-                  $ref: "#/components/schemas/Visibility"
-      responses:
-        "200":
-          description: Preferences updated
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Preferences"
-        "400":
-          $ref: "#/components/responses/BadRequest"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-
-  /notes:
-    post:
-      tags: [Notes]
-      summary: Create a note
-      operationId: createNote
-      security:
-        - sessionCookie: []
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              $ref: "#/components/schemas/CreateNoteUpload"
-            encoding:
-              tags:
-                contentType: application/json
-              headerImage:
-                contentType: image/jpeg, image/png, image/webp
-      responses:
-        "201":
-          description: Note created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Note"
+                $ref: "#/components/schemas/Envelopes/ProfileEnvelope"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "409":
           $ref: "#/components/responses/Conflict"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /users/preferences:
     get:
-      tags: [Notes]
-      summary: List the current user's notes
-      operationId: listMyNotes
-      security:
-        - sessionCookie: []
-      parameters:
-        - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Cursor"
+      tags: [Preferences]
+      summary: Get the authenticated user's preferences
+      description: Get the preferences for the currently authenticated user.
+      operationId: getPreferences
       responses:
         "200":
-          description: Paginated note summaries
+          description: Account preferences
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/NoteSummaryPage"
+                $ref: "#/components/schemas/Envelopes/PreferencesEnvelope"
         "401":
           $ref: "#/components/responses/Unauthorized"
-
-  /notes/explore:
-    get:
-      tags: [Notes]
-      summary: Discover public notes
-      operationId: exploreNotes
-      description: >
-        Returns public notes from other users. Private notes are
-        never included.
-      parameters:
-        - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Cursor"
-        - name: tag
-          in: query
-          schema:
-            type: string
-        - name: authorId
-          in: query
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Paginated public note summaries
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NoteSummaryPage"
-
-  /notes/{noteId}:
-    parameters:
-      - $ref: "#/components/parameters/NoteId"
-
-    get:
-      tags: [Notes]
-      summary: Get a note and its full Markdown content
-      operationId: getNote
-      description: >
-        Public notes can be read without authentication.
-        Private notes are readable only by their owner.
-        Unauthorized private notes return 404.
-      responses:
-        "200":
-          description: Full note
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Note"
-        "404":
-          $ref: "#/components/responses/NotFound"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     patch:
+      tags: [Preferences]
+      summary: Update the authenticated user's preferences
+      description: Update the currently authenticated user's preferences
+      operationId: updatePreferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Requests/UpdatePreferencesRequest"
+      responses:
+        "200":
+          description: Preferences updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelopes/PreferencesEnvelope"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /notes:
+    post:
       tags: [Notes]
-      summary: Update an owned note
-      operationId: updateNote
-      security:
-        - sessionCookie: []
+      summary: Create a note
+      description: Create a new note; only required fields are title and content
+      operationId: createNote
       requestBody:
         required: true
         content:
           multipart/form-data:
             schema:
-              $ref: "#/components/schemas/UpdateNoteUpload"
+              $ref: "#/components/schemas/Requests/CreateNoteRequest"
             encoding:
-              tags:
-                contentType: application/json
               headerImage:
-                contentType: image/jpeg, image/png, image/webp
+                contentType: image/*
+      responses:
+        "201":
+          description: Note created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelopes/NoteEnvelope"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    get:
+      tags: [Notes]
+      summary: List the authenticated user's notes
+      description: Returns note summaries, newest first. An empty collection is returned when the user has no notes.
+      operationId: listOwnNotes
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: The authenticated user's notes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelopes/NoteSummaryListEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /notes/explore:
+    get:
+      tags: [Notes]
+      summary: List public notes from other users
+      description: Explore feed with optional pagination, tag, and author filters.
+      operationId: exploreNotes
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+        - name: tag
+          in: query
+          description: Filter notes by tag.
+          schema:
+            type: string
+        - name: authorId
+          in: query
+          description: Filter notes by author.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Public notes for the Explore feed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelopes/NoteSummaryListEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /notes/{noteId}:
+    parameters:
+      - $ref: "#/components/parameters/NoteId"
+    get:
+      tags: [Notes]
+      summary: Get a note, including its Markdown content
+      description: Public notes can be read without authentication. A private note can  only be read by its owner. Return 404 for a private note when the requester is not its owner so its existence is not disclosed.
+      operationId: getNote
+      security:
+        - SessionCookie: []
+        - {}
+      responses:
+        "200":
+          description: Note details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelopes/NoteEnvelope"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    patch:
+      tags: [Notes]
+      summary: Update a note owned by the authenticated user
+      description: Only supplied fields are changed. `headerImage` is an uploaded image file. Use `removeHeaderImage` to remove the existing header image. Do not upload `headerImage` and set `removeHeaderImage` to true in the same request.
+      operationId: updateNote
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Requests/UpdateNoteRequest"
+            encoding:
+              headerImage:
+                contentType: image/*
       responses:
         "200":
           description: Note updated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Note"
+                $ref: "#/components/schemas/Envelopes/NoteEnvelope"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     delete:
       tags: [Notes]
-      summary: Delete an owned note
+      summary: Delete a note owned by the authenticated user
+      description: Delete a note owned by the authenticated user that matches the id in the URL parameter
       operationId: deleteNote
-      security:
-        - sessionCookie: []
       responses:
         "204":
-          description: Note deleted
+          description: Note deleted; response has no body
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-
-  /users/{username}/follow:
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /users/{userId}/follow:
     parameters:
-      - $ref: "#/components/parameters/Username"
-
+      - $ref: "#/components/parameters/UserId"
     put:
-      tags: [Relationships]
+      tags: [Follows]
       summary: Follow a user
+      description: Allows the currently authenticated user to follow another user with a user id which matches the URL parameter
       operationId: followUser
-      security:
-        - sessionCookie: []
       responses:
         "204":
-          description: Following relationship established
+          description: User followed; response has no body
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     delete:
-      tags: [Relationships]
+      tags: [Follows]
       summary: Unfollow a user
+      description: Removes a user whose user id matches the id given in the URL parameter from the currently authenticated user's "Following" list
       operationId: unfollowUser
-      security:
-        - sessionCookie: []
       responses:
         "204":
-          description: Following relationship removed
+          description: User unfollowed; response has no body
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-
-  /users/me/following:
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /users/following:
     get:
-      tags: [Relationships]
-      summary: List users I follow
+      tags: [Follows]
+      summary: List users followed by the authenticated user
+      description: List all users followed by the authenticated user
       operationId: listFollowing
-      security:
-        - sessionCookie: []
       parameters:
+        - $ref: "#/components/parameters/Page"
         - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Cursor"
       responses:
         "200":
-          description: Paginated user summaries
+          description: Following list
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserSummaryPage"
+                $ref: "#/components/schemas/Envelopes/UserSummaryListEnvelope"
         "401":
           $ref: "#/components/responses/Unauthorized"
-
-  /users/me/followers:
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /users/followers:
     get:
-      tags: [Relationships]
-      summary: List my followers
+      tags: [Follows]
+      summary: List the authenticated user's followers
+      description: List the authenticated user's followers; provides a summary of each user who follows the authenticated user (including their user id, username, and profile image)
       operationId: listFollowers
-      security:
-        - sessionCookie: []
       parameters:
+        - $ref: "#/components/parameters/Page"
         - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Cursor"
       responses:
         "200":
-          description: Paginated user summaries
+          description: Followers list
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserSummaryPage"
+                $ref: "#/components/schemas/Envelopes/UserSummaryListEnvelope"
         "401":
           $ref: "#/components/responses/Unauthorized"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /notes/{noteId}/like:
     parameters:
       - $ref: "#/components/parameters/NoteId"
-
     put:
-      tags: [Relationships]
-      summary: Like a public note by another user
+      tags: [Likes]
+      summary: Like a note
+      description: A user may like a public note written by another user or by themselves.
       operationId: likeNote
-      security:
-        - sessionCookie: []
       responses:
         "204":
-          description: Note liked
-        "400":
-          $ref: "#/components/responses/BadRequest"
+          description: Note liked; response has no body
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     delete:
-      tags: [Relationships]
-      summary: Unlike a note
+      tags: [Likes]
+      summary: Remove a like from a note
+      description: Removes a like from the authenticated user from the note whose id matches the note id given in the URL parameter
       operationId: unlikeNote
-      security:
-        - sessionCookie: []
       responses:
         "204":
-          description: Like removed
+          description: Like removed; response has no body
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-
-  /users/me/likes:
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /notes/saved:
     get:
-      tags: [Relationships]
-      summary: List notes I have liked
-      operationId: listLikedNotes
-      security:
-        - sessionCookie: []
+      tags: [Saves]
+      summary: List saved notes
+      description: List a summary (title, author, tags, header image, creation date and last updated date) of each note the authenticated user has saved
+      operationId: listSavedNotes
       parameters:
+        - $ref: "#/components/parameters/Page"
         - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Cursor"
       responses:
         "200":
-          description: Paginated note summaries
+          description: Saved notes
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/NoteSummaryPage"
+                $ref: "#/components/schemas/Envelopes/NoteSummaryListEnvelope"
         "401":
           $ref: "#/components/responses/Unauthorized"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /notes/{noteId}/save:
     parameters:
       - $ref: "#/components/parameters/NoteId"
-
     put:
-      tags: [Relationships]
-      summary: Save a public note by another user
+      tags: [Saves]
+      summary: Save a note
+      description: A user may save their own note or a note written by another user.
       operationId: saveNote
-      security:
-        - sessionCookie: []
       responses:
         "204":
-          description: Note saved
-        "400":
-          $ref: "#/components/responses/BadRequest"
+          description: Note saved; response has no body
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     delete:
-      tags: [Relationships]
+      tags: [Saves]
       summary: Remove a saved note
+      description: Removes the note whose id matches the note id given in the URL parameter from the authenticated user's list of saved notes
       operationId: unsaveNote
-      security:
-        - sessionCookie: []
       responses:
         "204":
-          description: Saved relationship removed
+          description: Note removed from saved notes; response has no body
         "401":
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
-
-  /users/me/saved:
-    get:
-      tags: [Relationships]
-      summary: List saved notes
-      operationId: listSavedNotes
-      security:
-        - sessionCookie: []
-      parameters:
-        - $ref: "#/components/parameters/Limit"
-        - $ref: "#/components/parameters/Cursor"
-      responses:
-        "200":
-          description: Paginated note summaries
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NoteSummaryPage"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 components:
   securitySchemes:
-    sessionCookie:
+    SessionCookie:
       type: apiKey
       in: cookie
-      name: noted_session
-
+      name: session
+      description: Authenticated requests use the session cookie. Replace `session` with the configured cookie name if the server uses a different name.
   parameters:
-    Username:
-      name: username
+    UserId:
+      name: userId
       in: path
       required: true
+      description: Numeric user identifier.
       schema:
-        type: string
-        minLength: 3
-        maxLength: 50
-
+        type: integer
+        minimum: 1
     NoteId:
       name: noteId
       in: path
       required: true
+      description: Numeric note identifier.
       schema:
         type: integer
         minimum: 1
-
+    Page:
+      name: page
+      in: query
+      description: Page number (1-based).
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
     Limit:
       name: limit
       in: query
-      description: Maximum number of items to return
+      description: Maximum number of items to return.
       schema:
         type: integer
         minimum: 1
         maximum: 100
         default: 20
-
-    Cursor:
-      name: cursor
-      in: query
-      description: Opaque cursor from a previous response
-      schema:
-        type: string
-
-  schemas:
-    User:
-      type: object
-      required: [userId, email, username]
-      properties:
-        userId:
-          type: integer
-        email:
-          type: string
-          format: email
-        username:
-          type: string
-
-    UserSummary:
-      type: object
-      required: [userId, username]
-      properties:
-        userId:
-          type: integer
-        username:
-          type: string
-        profileImageUri:
-          type: string
-          format: uri
-
-    Profile:
-      type: object
-      properties:
-        name:
-          type: [string, "null"]
-          minLength: 3
-          maxLength: 100
-        summary:
-          type: [string, "null"]
-          maxLength: 255
-        bio:
-          type: [string, "null"]
-          minLength: 3
-          maxLength: 1000
-        keywords:
-          type: array
-          maxItems: 20
-          uniqueItems: true
-          items:
-            type: string
-        profileImageUri:
-          type: string
-          format: uri
-          description: User image URI or default image URI
-      required: [profileImageUri]
-      additionalProperties: false
-
-    ProfileUpload:
-      type: object
-      properties:
-        name:
-          type: [string, "null"]
-          maxLength: 100
-        summary:
-          type: [string, "null"]
-          maxLength: 255
-        bio:
-          type: [string, "null"]
-          maxLength: 1000
-        tags:
-          type: array
-          maxItems: 20
-          uniqueItems: true
-          items:
-            type: string
-        profileImage:
-          description: Optional profile image upload
-        removeProfileImage:
-          type: boolean
-          description: Restore the default profile image
-
-    Visibility:
-      type: string
-      enum: [public, private]
-
-    Preferences:
-      type: object
-      required: [defaultNoteVisibility]
-      properties:
-        defaultNoteVisibility:
-          $ref: "#/components/schemas/Visibility"
-
-    CreateNoteUpload:
-      type: object
-      required: [title, content]
-      properties:
-        title:
-          type: string
-          minLength: 1
-        content:
-          type: string
-          description: Markdown source text
-        tags:
-          type: array
-          maxItems: 20
-          uniqueItems: true
-          items:
-            type: string
-        visibility:
-          $ref: "#/components/schemas/Visibility"
-        headerImage:
-          description: Optional note header image upload
-      additionalProperties: false
-
-    UpdateNoteUpload:
-      type: object
-      minProperties: 1
-      properties:
-        title:
-          type: string
-          minLength: 1
-        content:
-          type: string
-        tags:
-          type: array
-          uniqueItems: true
-          items:
-            type: string
-        visibility:
-          $ref: "#/components/schemas/Visibility"
-        headerImage:
-          description: Optional replacement header image
-        removeHeaderImage:
-          type: boolean
-          description: Remove the existing header image
-      additionalProperties: false
-
-    NoteSummary:
-      type: object
-      required:
-        - noteId
-        - title
-        - author
-        - createdAt
-        - tags
-      properties:
-        noteId:
-          type: integer
-        title:
-          type: string
-        headerImageUri:
-          type: [string, "null"]
-          format: uri
-        author:
-          $ref: "#/components/schemas/UserSummary"
-        createdAt:
-          type: string
-          format: date-time
-        tags:
-          type: array
-          items:
-            type: string
-        contentPreview:
-          type: string
-          maxLength: 255
-
-    Note:
-      allOf:
-        - $ref: "#/components/schemas/NoteSummary"
-        - type: object
-          required: [content, updatedAt, visibility]
-          properties:
-            content:
-              type: string
-              description: Full Markdown source text
-            updatedAt:
-              type: string
-              format: date-time
-            visibility:
-              $ref: "#/components/schemas/Visibility"
-
-    NoteSummaryPage:
-      type: object
-      required: [items]
-      properties:
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/NoteSummary"
-        nextCursor:
-          type: [string, "null"]
-
-    UserSummaryPage:
-      type: object
-      required: [items]
-      properties:
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/UserSummary"
-        nextCursor:
-          type: [string, "null"]
-
-    Error:
-      type: object
-      required: [statusCode, error, message]
-      properties:
-        statusCode:
-          type: integer
-        error:
-          type: string
-        message:
-          type: string
-
   responses:
     BadRequest:
-      description: Invalid request
+      description: Invalid input or malformed request
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
-
+            $ref: "#/components/schemas/Envelopes/ErrorEnvelope"
     Unauthorized:
-      description: Authentication required or credentials invalid
+      description: Authentication is missing or invalid
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
-
+            $ref: "#/components/schemas/Envelopes/ErrorEnvelope"
     NotFound:
-      description: Resource not found or inaccessible
+      description: Resource not found or hidden because the requester lacks access
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
-
+            $ref: "#/components/schemas/Envelopes/ErrorEnvelope"
     Conflict:
-      description: Request conflicts with existing state
+      description: Request conflicts with the current resource state
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Error"
+            $ref: "#/components/schemas/Envelopes/ErrorEnvelope"
+    InternalServerError:
+      description: Unexpected server failure
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Envelopes/ErrorEnvelope"
+  schemas:
+    Core:
+      Id:
+        type: integer
+        minimum: 1
+      Username:
+        type: string
+        minLength: 3
+        maxLength: 20
+      Password:
+        type: string
+        format: password
+        minLength: 8
+      Email:
+        type: string
+        format: email
+      NoteTitle:
+        type: string
+      NoteContent:
+        type: string
+        description: Markdown content.
+      Tags:
+        type: array
+        items:
+          type: string
+      Visibility:
+        type: string
+      Summary:
+        type: string
+      Bio:
+        type: string
+      Keywords:
+        type: array
+        items:
+          type: string
+      DateTime:
+        type: string
+        format: date-time
+      ImageUri:
+        type: string
+        format: uri
+      Pagination:
+        type: object
+        properties:
+          page:
+            type: integer
+            minimum: 1
+          limit:
+            type: integer
+            minimum: 1
+          total:
+            type: integer
+            minimum: 0
+          hasMore:
+            type: boolean
+        additionalProperties: false
+    Users:
+      User:
+        type: object
+        required:
+          - id
+          - username
+          - email
+          - createdAt
+          - updatedAt
+        properties:
+          id:
+            $ref: "#/components/schemas/Core/Id"
+          username:
+            $ref: "#/components/schemas/Core/Username"
+          email:
+            $ref: "#/components/schemas/Core/Email"
+          profileImageUri:
+            $ref: "#/components/schemas/Core/ImageUri"
+          createdAt:
+            $ref: "#/components/schemas/Core/DateTime"
+          updatedAt:
+            $ref: "#/components/schemas/Core/DateTime"
+        additionalProperties: false
+      UserSummary:
+        type: object
+        required:
+          - id
+          - username
+        properties:
+          id:
+            $ref: "#/components/schemas/Core/Id"
+          username:
+            $ref: "#/components/schemas/Core/Username"
+          profileImageUri:
+            $ref: "#/components/schemas/Core/ImageUri"
+        additionalProperties: false
+    Profile:
+      type: object
+      required:
+        - name
+        - summary
+        - bio
+        - keywords
+        - createdAt
+        - updatedAt
+      properties:
+        name:
+          type: string
+        summary:
+          $ref: "#/components/schemas/Core/Summary"
+        bio:
+          $ref: "#/components/schemas/Core/Bio"
+        keywords:
+          $ref: "#/components/schemas/Core/Keywords"
+        profileImageUri:
+          $ref: "#/components/schemas/Core/ImageUri"
+        createdAt:
+          $ref: "#/components/schemas/Core/DateTime"
+        updatedAt:
+          $ref: "#/components/schemas/Core/DateTime"
+      additionalProperties: false
+    Preferences:
+      type: object
+      required:
+        - visibility
+        - createdAt
+        - updatedAt
+      properties:
+        visibility:
+          $ref: "#/components/schemas/Core/Visibility"
+        createdAt:
+          $ref: "#/components/schemas/Core/DateTime"
+        updatedAt:
+          $ref: "#/components/schemas/Core/DateTime"
+      additionalProperties: false
+    Notes:
+      Author:
+        type: object
+        required:
+          - id
+          - username
+        properties:
+          id:
+            $ref: "#/components/schemas/Core/Id"
+          username:
+            $ref: "#/components/schemas/Core/Username"
+          profileImageUri:
+            $ref: "#/components/schemas/Core/ImageUri"
+        additionalProperties: false
+      Note:
+        type: object
+        required:
+          - id
+          - title
+          - content
+          - author
+          - tags
+          - visibility
+          - createdAt
+          - updatedAt
+        properties:
+          id:
+            $ref: "#/components/schemas/Core/Id"
+          title:
+            $ref: "#/components/schemas/Core/NoteTitle"
+          content:
+            $ref: "#/components/schemas/Core/NoteContent"
+          author:
+            $ref: "#/components/schemas/Notes/Author"
+          headerImageUri:
+            $ref: "#/components/schemas/Core/ImageUri"
+          tags:
+            $ref: "#/components/schemas/Core/Tags"
+          visibility:
+            $ref: "#/components/schemas/Core/Visibility"
+          createdAt:
+            $ref: "#/components/schemas/Core/DateTime"
+          updatedAt:
+            $ref: "#/components/schemas/Core/DateTime"
+        additionalProperties: false
+      NoteSummary:
+        type: object
+        required:
+          - id
+          - title
+          - author
+          - tags
+          - createdAt
+        properties:
+          id:
+            $ref: "#/components/schemas/Core/Id"
+          title:
+            $ref: "#/components/schemas/Core/NoteTitle"
+          author:
+            $ref: "#/components/schemas/Notes/Author"
+          headerImageUri:
+            $ref: "#/components/schemas/Core/ImageUri"
+          tags:
+            $ref: "#/components/schemas/Core/Tags"
+          createdAt:
+            $ref: "#/components/schemas/Core/DateTime"
+          updatedAt:
+            $ref: "#/components/schemas/Core/DateTime"
+        additionalProperties: false
+    Requests:
+      RegisterRequest:
+        type: object
+        required:
+          - email
+          - username
+          - password
+        properties:
+          email:
+            $ref: "#/components/schemas/Core/Email"
+          username:
+            $ref: "#/components/schemas/Core/Username"
+          password:
+            $ref: "#/components/schemas/Core/Password"
+        additionalProperties: false
+      LoginRequest:
+        type: object
+        required:
+          - email
+          - password
+        properties:
+          email:
+            $ref: "#/components/schemas/Core/Email"
+          password:
+            $ref: "#/components/schemas/Core/Password"
+        additionalProperties: false
+      UpdateAccountRequest:
+        type: object
+        minProperties: 1
+        properties:
+          email:
+            $ref: "#/components/schemas/Core/Email"
+          username:
+            $ref: "#/components/schemas/Core/Username"
+          password:
+            $ref: "#/components/schemas/Core/Password"
+        additionalProperties: false
+      ReplaceProfileRequest:
+        type: object
+        required:
+          - name
+          - summary
+          - bio
+          - keywords
+        properties:
+          name:
+            type: string
+          summary:
+            $ref: "#/components/schemas/Core/Summary"
+          bio:
+            $ref: "#/components/schemas/Core/Bio"
+          keywords:
+            $ref: "#/components/schemas/Core/Keywords"
+          profileImage:
+            type: string
+            format: binary
+          resetProfileImage:
+            type: boolean
+            default: false
+        additionalProperties: false
+      UpdateProfileRequest:
+        type: object
+        minProperties: 1
+        properties:
+          name:
+            type: string
+          summary:
+            $ref: "#/components/schemas/Core/Summary"
+          bio:
+            $ref: "#/components/schemas/Core/Bio"
+          keywords:
+            $ref: "#/components/schemas/Core/Keywords"
+          profileImage:
+            type: string
+            format: binary
+          resetProfileImage:
+            type: boolean
+        additionalProperties: false
+      UpdatePreferencesRequest:
+        type: object
+        required:
+          - visibility
+        properties:
+          visibility:
+            $ref: "#/components/schemas/Core/Visibility"
+        additionalProperties: false
+      CreateNoteRequest:
+        type: object
+        required:
+          - title
+          - content
+        properties:
+          title:
+            $ref: "#/components/schemas/Core/NoteTitle"
+          content:
+            $ref: "#/components/schemas/Core/NoteContent"
+          headerImage:
+            type: string
+            format: binary
+          tags:
+            $ref: "#/components/schemas/Core/Tags"
+          visibility:
+            $ref: "#/components/schemas/Core/Visibility"
+        additionalProperties: false
+      UpdateNoteRequest:
+        type: object
+        minProperties: 1
+        properties:
+          title:
+            $ref: "#/components/schemas/Core/NoteTitle"
+          content:
+            $ref: "#/components/schemas/Core/NoteContent"
+          headerImage:
+            type: string
+            format: binary
+          removeHeaderImage:
+            type: boolean
+          tags:
+            $ref: "#/components/schemas/Core/Tags"
+          visibility:
+            $ref: "#/components/schemas/Core/Visibility"
+        additionalProperties: false
+    Envelopes:
+      Meta:
+        type: object
+        required:
+          - requestId
+        properties:
+          requestId:
+            type: string
+          pagination:
+            $ref: "#/components/schemas/Core/Pagination"
+          filteredBy:
+            type: object
+            additionalProperties: true
+        additionalProperties: false
+      Error:
+        type: object
+        required:
+          - code
+          - message
+        properties:
+          code:
+            type: string
+            example: NOT_FOUND
+          message:
+            type: string
+            example: The requested resource could not be found.
+          details:
+            type: object
+            description: Additional structured information about the error.
+            additionalProperties: true
+        additionalProperties: false
+      ErrorEnvelope:
+        type: object
+        required:
+          - error
+          - meta
+        properties:
+          error:
+            $ref: "#/components/schemas/Envelopes/Error"
+          meta:
+            $ref: "#/components/schemas/Envelopes/Meta"
+        additionalProperties: false
+      UserData:
+        type: object
+        required:
+          - user
+        properties:
+          user:
+            $ref: "#/components/schemas/Users/User"
+        additionalProperties: false
+      UserEnvelope:
+        type: object
+        required:
+          - data
+          - meta
+        properties:
+          data:
+            $ref: "#/components/schemas/Envelopes/UserData"
+          meta:
+            $ref: "#/components/schemas/Envelopes/Meta"
+        additionalProperties: false
+      UserSummaryListData:
+        type: object
+        required:
+          - users
+        properties:
+          users:
+            type: array
+            items:
+              $ref: "#/components/schemas/Users/UserSummary"
+        additionalProperties: false
+      UserSummaryListEnvelope:
+        type: object
+        required:
+          - data
+          - meta
+        properties:
+          data:
+            $ref: "#/components/schemas/Envelopes/UserSummaryListData"
+          meta:
+            $ref: "#/components/schemas/Envelopes/Meta"
+        additionalProperties: false
+      ProfileData:
+        type: object
+        required:
+          - profile
+        properties:
+          profile:
+            $ref: "#/components/schemas/Profile"
+        additionalProperties: false
+      ProfileEnvelope:
+        type: object
+        required:
+          - data
+          - meta
+        properties:
+          data:
+            $ref: "#/components/schemas/Envelopes/ProfileData"
+          meta:
+            $ref: "#/components/schemas/Envelopes/Meta"
+        additionalProperties: false
+      ProfileWithUserData:
+        type: object
+        required:
+          - user
+          - profile
+        properties:
+          user:
+            type: object
+            required:
+              - username
+            properties:
+              username:
+                type: string
+            additionalProperties: false
+          profile:
+            $ref: "#/components/schemas/Profile"
+        additionalProperties: false
+      ProfileWithUserEnvelope:
+        type: object
+        required:
+          - data
+          - meta
+        properties:
+          data:
+            $ref: "#/components/schemas/Envelopes/ProfileWithUserData"
+          meta:
+            $ref: "#/components/schemas/Envelopes/Meta"
+        additionalProperties: false
+      PreferencesData:
+        type: object
+        required:
+          - user
+          - account
+        properties:
+          user:
+            type: object
+            required:
+              - id
+              - username
+            properties:
+              id:
+                type: integer
+                minimum: 1
+              username:
+                type: string
+            additionalProperties: false
+          account:
+            $ref: "#/components/schemas/Preferences"
+        additionalProperties: false
+      PreferencesEnvelope:
+        type: object
+        required:
+          - data
+          - meta
+        properties:
+          data:
+            $ref: "#/components/schemas/Envelopes/PreferencesData"
+          meta:
+            $ref: "#/components/schemas/Envelopes/Meta"
+        additionalProperties: false
+      NoteData:
+        type: object
+        required:
+          - note
+        properties:
+          note:
+            $ref: "#/components/schemas/Notes/Note"
+        additionalProperties: false
+      NoteEnvelope:
+        type: object
+        required:
+          - data
+          - meta
+        properties:
+          data:
+            $ref: "#/components/schemas/Envelopes/NoteData"
+          meta:
+            $ref: "#/components/schemas/Envelopes/Meta"
+        additionalProperties: false
+      NoteSummaryListData:
+        type: object
+        required:
+          - notes
+        properties:
+          notes:
+            type: array
+            items:
+              $ref: "#/components/schemas/Notes/NoteSummary"
+        additionalProperties: false
+      NoteSummaryListEnvelope:
+        type: object
+        required:
+          - data
+          - meta
+        properties:
+          data:
+            $ref: "#/components/schemas/Envelopes/NoteSummaryListData"
+          meta:
+            $ref: "#/components/schemas/Envelopes/Meta"
+        additionalProperties: false
