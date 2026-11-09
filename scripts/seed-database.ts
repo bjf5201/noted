@@ -2,7 +2,8 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { sql } from 'drizzle-orm';
 import { seedUsers } from './seed-users.js';
-import { roles, userRoles, users } from 'noted/database/schema.js';
+import { roles, users, usersRoles } from 'noted/database/schema.js';
+import { relations } from 'noted/database/relations.js';
 import { scryptHash } from 'noted/plugins/app/password-manager.js';
 
 if (Number(process.env.CAN_SEED_DATABASE) !== 1) {
@@ -12,7 +13,7 @@ if (Number(process.env.CAN_SEED_DATABASE) !== 1) {
 }
 
 async function seed() {
-  const pool = new Pool({
+  const client = new Pool({
     host: process.env.POSTGRES_HOST,
     port: Number(process.env.POSTGRES_PORT),
     user: process.env.POSTGRES_USER,
@@ -21,14 +22,17 @@ async function seed() {
   });
 
   try {
-    const db = drizzle(pool);
+    const db = drizzle({
+      client,
+      relations
+    });
     await truncateTables(db);
     await seedDatabase(db);
   } catch (error) {
     console.error('Error seeding database:', error);
     process.exit(1);
   } finally {
-    await pool.end();
+    await client.end();
   }
 }
 
@@ -39,7 +43,7 @@ async function truncateTables(db: ReturnType<typeof drizzle>) {
 
     // Truncate all tables
     await db.execute(
-      sql`TRUNCATE TABLE ${sql.identifier('user_roles')} CASCADE`
+      sql`TRUNCATE TABLE ${sql.identifier('users_roles')} CASCADE`
     );
     await db.execute(sql`TRUNCATE TABLE ${sql.identifier('users')} CASCADE`);
     await db.execute(sql`TRUNCATE TABLE ${sql.identifier('roles')} CASCADE`);
@@ -68,7 +72,7 @@ async function seedDatabase(db: ReturnType<typeof drizzle>) {
       .values({
         username: seedUser.username,
         email: seedUser.email,
-        password: hash
+        passwordHash: hash
       })
       .returning({ id: users.id });
 
@@ -85,7 +89,7 @@ async function seedDatabase(db: ReturnType<typeof drizzle>) {
 
     // Associate user with all accumulated roles
     for (const roleId of rolesAccumulator) {
-      await db.insert(userRoles).values({
+      await db.insert(usersRoles).values({
         userId,
         roleId
       });

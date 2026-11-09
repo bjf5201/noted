@@ -1,0 +1,1 @@
+ALTER TABLE "notes" ADD COLUMN "header_image_uri" text;

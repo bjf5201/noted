@@ -22,6 +22,104 @@
       "when": 1791593413607,
       "tag": "0002_unique_note_title_per_user",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793762087530,
+      "tag": "0003_add_user_timestamps",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793810441535,
+      "tag": "0004_add_note_visibility_field",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793811000860,
+      "tag": "0005_users_updated_at_trigger",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793988791554,
+      "tag": "0006_add_user_field_constraints",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793989774126,
+      "tag": "0007_add_profiles_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793989969290,
+      "tag": "0008_add_preferences_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793990014766,
+      "tag": "0009_add_header_image_field_to_notes_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794143337051,
+      "tag": "0010_add_tags_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794143383009,
+      "tag": "0011_fix_misspelled_note_tags_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1794144712213,
+      "tag": "0012_fix_inconsistent_naming",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1794145542178,
+      "tag": "0013_add_follows_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1794147573356,
+      "tag": "0014_add_likes_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1794147902086,
+      "tag": "0015_add_saves_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1794148997893,
+      "tag": "0016_add_sessions_table_and_idx",
+      "breakpoints": true
     }
   ]
 }

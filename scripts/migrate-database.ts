@@ -1,10 +1,11 @@
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import { relations } from '../src/database/relations.js';
 import path from 'node:path';
 
 async function doMigration(): Promise<void> {
-  const pool = new Pool({
+  const client = new Pool({
     host: process.env.POSTGRES_HOST,
     port: Number(process.env.POSTGRES_PORT),
     user: process.env.POSTGRES_USER,
@@ -13,7 +14,10 @@ async function doMigration(): Promise<void> {
   });
 
   try {
-    const db = drizzle(pool);
+    const db = drizzle({
+      client,
+      relations
+    });
     const migrationsFolder = path.join(
       import.meta.dirname,
       '../src/database/migrations'
@@ -26,7 +30,7 @@ async function doMigration(): Promise<void> {
     console.error('Migration error:', err);
     process.exit(1);
   } finally {
-    await pool.end();
+    await client.end();
   }
 }
 

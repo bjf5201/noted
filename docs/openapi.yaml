@@ -139,7 +139,7 @@ paths:
   /users:
     get:
       tags: [Users]
-      description: List all public user's as an array; showing a summary for each user including their user id, username, and profile image.
+      description: List all public users as an array; showing a summary for each user including their user id, username, and profile image.
       summary: List users
       operationId: listUsers
       security: []
@@ -164,6 +164,7 @@ paths:
       tags: [Users]
       description: Get basic information about a user by their user ID
       summary: Get user by ID
+      security: []
       operationId: getUser
       responses:
         "200":
@@ -171,7 +172,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Envelopes/UserEnvelope"
+                $ref: "#/components/schemas/Envelopes/UserSummaryEnvelope"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -186,6 +187,7 @@ paths:
     get:
       tags: [Profiles]
       summary: Get a user's public profile
+      security: []
       description: Get a user's public profile information (name, bio, summary, keywords, profileImage, profile creation date and date of last profile update) using their user id
       operationId: getPublicProfile
       responses:
@@ -223,7 +225,7 @@ paths:
     put:
       tags: [Profiles]
       summary: Create or replace the authenticated user's profile
-      description: Replaces the profile. `profileImage` is an uploaded image file;`profileImageUri` is returned by read operations. Use `resetProfileImage` to restore the default image. Do not send both `profileImage` and `resetProfileImage` in the same request.
+      description: Replaces the profile. `profileImage` is an uploaded image file; `profileImageUri` is returned by read operations. Use `resetProfileImage` to restore the default image. Do not send both `profileImage` and `resetProfileImage` in the same request.
 
       operationId: replaceOwnProfile
       requestBody:
@@ -400,8 +402,6 @@ paths:
                 $ref: "#/components/schemas/Envelopes/NoteSummaryListEnvelope"
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "404":
-          $ref: "#/components/responses/NotFound"
         "500":
           $ref: "#/components/responses/InternalServerError"
   /notes/{noteId}:
@@ -410,7 +410,7 @@ paths:
     get:
       tags: [Notes]
       summary: Get a note, including its Markdown content
-      description: Public notes can be read without authentication. A private note can  only be read by its owner. Return 404 for a private note when the requester is not its owner so its existence is not disclosed.
+      description: Public notes can be read without authentication. A private note can only be read by its owner. Return 404 for a private note when the requester is not its owner so its existence is not disclosed.
       operationId: getNote
       security:
         - SessionCookie: []
@@ -718,6 +718,7 @@ components:
         format: email
       NoteTitle:
         type: string
+        maxLength: 100
       NoteContent:
         type: string
         description: Markdown content.
@@ -727,6 +728,7 @@ components:
           type: string
       Visibility:
         type: string
+        enum: [public, private]
       Summary:
         type: string
       Bio:
@@ -884,6 +886,7 @@ components:
           - author
           - tags
           - createdAt
+          - updatedAt
         properties:
           id:
             $ref: "#/components/schemas/Core/Id"
@@ -1083,6 +1086,14 @@ components:
           meta:
             $ref: "#/components/schemas/Envelopes/Meta"
         additionalProperties: false
+      UserSummaryEnvelope:
+        type: object
+        required:
+          - data
+          - meta
+        properties:
+          data:
+            $ref: "#/components/schemas/Users/UserSummary"
       UserSummaryListData:
         type: object
         required:
@@ -1155,7 +1166,7 @@ components:
         type: object
         required:
           - user
-          - account
+          - preferences
         properties:
           user:
             type: object
@@ -1169,7 +1180,7 @@ components:
               username:
                 type: string
             additionalProperties: false
-          account:
+          preferences:
             $ref: "#/components/schemas/Preferences"
         additionalProperties: false
       PreferencesEnvelope:
