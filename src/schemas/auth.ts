@@ -7,7 +7,6 @@ import {
 } from './shared/patterns.js';
 import { ApiFailureSchema, ApiSuccessSchema } from './shared/api.js';
 
-// TODO:
 const AuthEntitySchema = Type.Object({
   id: IdSchema,
   email: EmailSchema,

@@ -921,11 +921,11 @@ components:
       LoginRequest:
         type: object
         required:
-          - email
+          - username
           - password
         properties:
-          email:
-            $ref: "#/components/schemas/Core/Email"
+          username:
+            $ref: "#/components/schemas/Core/Username"
           password:
             $ref: "#/components/schemas/Core/Password"
         additionalProperties: false
