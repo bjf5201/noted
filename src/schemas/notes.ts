@@ -4,17 +4,14 @@ import {
   IdSchema,
   LongStringSchema,
   ShortStringSchema
-} from './shared.js';
+} from './shared/patterns.js';
 
-export interface Note extends Static<typeof NoteSchema> {
-  filename?: string | null;
-}
-
-export const NoteSchema = Type.Object({
+export const NoteEntitySchema = Type.Object({
   id: IdSchema,
   userId: IdSchema,
   title: ShortStringSchema,
   content: LongStringSchema,
+  filename: Type.Optional(Type.String()),
   createdAt: DateTimeSchema,
   updatedAt: DateTimeSchema
 });
@@ -28,3 +25,5 @@ export const UpdateNoteSchema = Type.Object({
   title: Type.Optional(ShortStringSchema),
   content: Type.Optional(LongStringSchema)
 });
+
+export type NoteEntity = Static<typeof NoteEntitySchema>;

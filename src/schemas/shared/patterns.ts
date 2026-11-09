@@ -6,6 +6,10 @@ const PASSWORD_REGEX =
 const PHONE_REGEX =
   /^\+?1?[-. ]?\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/;
 
+const ROLES = ['basic', 'moderator', 'admin'];
+
+export const RolesSchema = Type.Enum(ROLES);
+
 export const PasswordSchema = Type.String({
   pattern: PASSWORD_REGEX,
   minLength: 8,

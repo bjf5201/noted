@@ -10,31 +10,45 @@ import { ApiError, ApiResponse } from './api-response.js';
  */
 export function errorHandler(
   error: unknown,
-  _request: FastifyRequest,
+  request: FastifyRequest,
   reply: FastifyReply
 ): void {
   if (error instanceof ApiError) {
-    void reply
-      .status(error.statusCode)
-      .send(
-        ApiResponse.failure(error.statusCode, error.message, error.details)
-      );
+    const response = ApiResponse.failure(
+      error.statusCode,
+      error.code,
+      error.message,
+      request.id,
+      error.details
+    );
+
+    void reply.status(response.statusCode).send(response.body);
     return;
   }
-  const status =
+
+  const statusCode =
     typeof error === 'object' &&
     error !== null &&
     'statusCode' in error &&
     typeof error.statusCode === 'number'
       ? error.statusCode
       : 500;
-  console.error('Unhandled error:', error);
-  void reply
-    .status(status)
-    .send(
-      ApiResponse.failure(
-        status,
-        error instanceof Error ? error.message : 'Internal Server Error'
-      )
-    );
+
+  console.error(`Unhandled error: ${error}`);
+
+  const message =
+    statusCode >= 500
+      ? 'Internal Server Error'
+      : error instanceof Error
+        ? error.message
+        : 'An unexpected error occured.';
+
+  const response = ApiResponse.failure(
+    statusCode,
+    ApiResponse.getErrorCode(statusCode),
+    message,
+    request.id
+  );
+
+  void reply.status(response.statusCode).send(response.body);
 }

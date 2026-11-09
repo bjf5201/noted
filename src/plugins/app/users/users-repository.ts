@@ -1,8 +1,8 @@
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import { eq } from 'drizzle-orm';
-import { roles, userRoles, users } from 'noted/database/schema.js';
-import { Auth } from '../../../schemas/auth.js';
+import { roles, users, usersRoles } from 'noted/database/schema.js';
+import { AuthEntity } from '../../../schemas/auth.js';
 
 type Database = FastifyInstance['db'];
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
@@ -24,28 +24,38 @@ export function createUsersRepository(fastify: FastifyInstance) {
           id: users.id,
           username: users.username,
           email: users.email,
-          password: users.password
+          password: users.passwordHash
         })
         .from(users)
         .where(eq(users.email, email))
         .limit(1);
 
-      return user as (Auth & { password: string }) | undefined;
+      return user as (AuthEntity & { password: string }) | undefined;
     },
 
     async create(
-      user: { username: string; email: string; password: string },
+      user: {
+        username: string;
+        email: string;
+        passwordHash: string;
+      },
       executor: DatabaseExecutor = db
     ) {
       const [createdUser] = await executor
         .insert(users)
         .values(user)
-        .returning({ id: users.id });
+        .returning({
+          id: users.id,
+          username: users.username,
+          email: users.email,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt
+        });
 
       return {
-        id: createdUser.id,
-        username: user.username,
-        email: user.email
+        ...createdUser,
+        createdAt: createdUser.createdAt.toISOString(),
+        updatedAt: createdUser.updatedAt.toISOString()
       };
     },
 
@@ -56,7 +66,7 @@ export function createUsersRepository(fastify: FastifyInstance) {
     ) {
       return executor
         .update(users)
-        .set({ password: hashedPassword })
+        .set({ passwordHash: hashedPassword })
         .where(eq(users.email, email));
     },
 
@@ -64,8 +74,8 @@ export function createUsersRepository(fastify: FastifyInstance) {
       const result = await executor
         .select({ name: roles.name })
         .from(roles)
-        .innerJoin(userRoles, eq(userRoles.roleId, roles.id))
-        .innerJoin(users, eq(userRoles.userId, users.id))
+        .innerJoin(usersRoles, eq(usersRoles.roleId, roles.id))
+        .innerJoin(users, eq(usersRoles.userId, users.id))
         .where(eq(users.email, email));
 
       return result;

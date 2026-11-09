@@ -1,47 +1,67 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
-import { authSchema } from 'noted/schemas/auth.js';
+import { AuthSchema } from 'noted/schemas/auth.js';
+import { ApiResponse } from 'noted/lib/api-response.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { usersRepository, passwordManager } = fastify;
+
   fastify.post(
     '/login',
     {
-      schema: authSchema
+      schema: AuthSchema
     },
     async function (request, reply) {
       const { email, password } = request.body;
 
-      return fastify.db.transaction(async (trx) => {
+      const response = await fastify.db.transaction(async (trx) => {
         const user = await usersRepository.findByEmail(email, trx);
 
-        if (user) {
-          const isPasswordValid = await passwordManager.compare(
-            password,
-            user.password
+        if (!user) {
+          return ApiResponse.unauthorized(
+            request.id,
+            'Invalid email or password.'
           );
-          if (isPasswordValid) {
-            const roles = await usersRepository.findUserRolesByEmail(
-              email,
-              trx
-            );
+        }
 
-            request.session.user = {
+        const isPasswordValid = await passwordManager.compare(
+          password,
+          user.password
+        );
+
+        if (!isPasswordValid) {
+          return ApiResponse.unauthorized(
+            request.id,
+            'Invalid email or password.'
+          );
+        }
+
+        const roles = await usersRepository.findUserRolesByEmail(email, trx);
+
+        const userRoles = roles.map((role) => role.name);
+
+        request.session.user = {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          roles: userRoles
+        };
+
+        await request.session.save();
+
+        return ApiResponse.ok(
+          {
+            user: {
               id: user.id,
               email: user.email,
               username: user.username,
-              roles: roles.map((role) => role.name)
-            };
-
-            await request.session.save();
-
-            return { success: true };
-          }
-        }
-
-        reply.code(401);
-
-        return { message: 'Invalid email or password.' };
+              roles: userRoles
+            }
+          },
+          request.id
+        );
       });
+
+      return reply.status(response.statusCode).send(response.body);
     }
   );
 };

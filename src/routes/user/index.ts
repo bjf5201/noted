@@ -1,5 +1,6 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
 import { CreateUserSchema, UpdateUserSchema } from 'noted/schemas/user.js';
+import { ApiResponse } from '../../lib/api-response.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { usersRepository, passwordManager } = fastify;
@@ -14,11 +15,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const isExistingUser = await usersRepository.findByEmail(email);
 
       if (isExistingUser) {
-        return reply.code(409).send({
-          success: false,
-          code: 409,
-          error: 'A user with this email already exists.'
-        });
+        ApiResponse.conflict(
+          request.id,
+          'A user with this information already exists.'
+        );
       }
 
       const hashedPassword = await passwordManager.hash(password);
@@ -26,10 +26,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const user = await usersRepository.create({
         username,
         email,
-        password: hashedPassword
+        passwordHash: hashedPassword
       });
 
-      return reply.code(201).send(user);
+      const response = ApiResponse.created(user, request.id);
+
+      return reply.code(response.statusCode).send(response.body);
     }
   );
   fastify.patch(
@@ -51,9 +53,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       if (!user) {
         return reply.code(401).send({
-          success: false,
-          code: 401,
-          error: 'User does not exist.'
+          error: {
+            code: 'UNAUTHORIZED',
+            message: 'User does not exist.'
+          },
+          meta: {
+            requestId: request.id
+          }
         });
       }
 
@@ -64,18 +70,26 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       if (!isPasswordCorrect) {
         return reply.code(401).send({
-          success: false,
-          code: 401,
-          error: 'Incorrect current password.'
+          error: {
+            code: 'UNAUTHORIZED',
+            message: 'Incorrect current password.'
+          },
+          meta: {
+            requestId: request.id
+          }
         });
       }
 
       if (newPassword === currentPassword) {
         reply.status(400);
         return {
-          success: false,
-          code: 400,
-          error: 'New password must not match current password.'
+          error: {
+            code: 'BAD REQUEST',
+            message: 'New password must not match current password.'
+          },
+          meta: {
+            requestId: request.id
+          }
         };
       }
 
@@ -84,9 +98,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       reply.status(200);
       return {
-        success: true,
-        code: 200,
-        message: 'Password updated successfully!'
+        data: 'Password updated successfully.' as const,
+        meta: {
+          requestId: request.id
+        }
       };
     }
   );
