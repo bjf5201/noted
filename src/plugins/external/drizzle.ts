@@ -2,7 +2,7 @@ import fp from 'fastify-plugin';
 import { FastifyPluginAsync } from 'fastify';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import * as schema from 'noted/database/schema.js';
+import { relations } from 'noted/database/relations.js';
 
 declare module 'fastify' {
   export interface FastifyInstance {
@@ -11,7 +11,7 @@ declare module 'fastify' {
 }
 
 const drizzlePlugin: FastifyPluginAsync = async (fastify) => {
-  const pool = new Pool({
+  const client = new Pool({
     host: fastify.config.POSTGRES_HOST,
     port: Number(fastify.config.POSTGRES_PORT),
     user: fastify.config.POSTGRES_USER,
@@ -19,11 +19,14 @@ const drizzlePlugin: FastifyPluginAsync = async (fastify) => {
     database: fastify.config.POSTGRES_DATABASE
   });
 
-  const db = drizzle(pool, { schema });
+  const db = drizzle({
+    client,
+    relations
+  });
   fastify.decorate('db', db);
 
   fastify.addHook('onClose', async () => {
-    await pool.end();
+    await client.end();
   });
 };
 
