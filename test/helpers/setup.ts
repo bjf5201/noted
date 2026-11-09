@@ -39,10 +39,10 @@ export async function createUser(
   app: FastifyInstance,
   payload: { email: string; username: string; password: string }
 ) {
-  const password = await app.passwordManager.hash(payload.password);
+  const passwordHash = await app.passwordManager.hash(payload.password);
   const [user] = await app.db
     .insert(users)
-    .values({ ...payload, password })
+    .values({ ...payload, passwordHash })
     .returning();
   return user;
 }

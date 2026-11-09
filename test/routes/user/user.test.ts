@@ -38,7 +38,7 @@ describe('Users API (/api/v1/user)', async () => {
         .where(eq(users.email, email));
 
       assert.ok(createdUser);
-      assert.notStrictEqual(createdUser.password, 'Password123$');
+      assert.notStrictEqual(createdUser.passwordHash, 'Password123$');
     });
   });
 
