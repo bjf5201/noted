@@ -19,11 +19,43 @@ tags:
   - name: Follows
   - name: Likes
   - name: Saves
+  - name: Documentation
 
 security:
   - SessionCookie: []
 
 paths:
+  /:
+    get:
+      tags: [Documentation]
+      summary: API welcome message
+      description: API welcome message and instructions for new, authenticated consumers
+      operationId: welcome
+      responses:
+        "200":
+          description: API welcome message served successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Envelopes/InfoEnvelope"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /docs:
+    get:
+      tags: [Documentation]
+      summary: API documentation
+      description: Serves the API documentation as an HTML document. The document may be a static page or an application shell that loads the documenation UI.
+      operationId: getDocumentation
+      security: []
+      responses:
+        "200":
+          description: Documenation page served successfully
+          content:
+            text/html:
+              schema:
+                type: string
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /auth/register:
     post:
       tags: [Authentication]
@@ -903,6 +935,11 @@ components:
           updatedAt:
             $ref: "#/components/schemas/Core/DateTime"
         additionalProperties: false
+    Documentation:
+      Info:
+        type: string
+        minLength: 3
+        maxLength: 240
     Requests:
       RegisterRequest:
         type: object
@@ -1039,6 +1076,23 @@ components:
             type: object
             additionalProperties: true
         additionalProperties: false
+      Info:
+        type: object
+        required:
+          - info
+        properties:
+          info:
+            $ref: "#/components/schemas/Documentation/Info"
+      InfoEnvelope:
+        type: object
+        required:
+          - data
+          - meta
+        properties:
+          data:
+            $ref: "#/components/schemas/Envelopes/Info"
+          meta:
+            $ref: "#/components/schemas/Envelopes/Meta"
       Error:
         type: object
         required:
