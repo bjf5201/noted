@@ -3,13 +3,13 @@ import {
   DateTimeSchema,
   IdSchema,
   LongStringSchema,
-  ShortStringSchema
+  NoteTitleSchema
 } from './shared/patterns.js';
 
 export const NoteEntitySchema = Type.Object({
   id: IdSchema,
   userId: IdSchema,
-  title: ShortStringSchema,
+  title: NoteTitleSchema,
   content: LongStringSchema,
   filename: Type.Optional(Type.String()),
   createdAt: DateTimeSchema,
@@ -17,12 +17,12 @@ export const NoteEntitySchema = Type.Object({
 });
 
 export const CreateNoteSchema = Type.Object({
-  title: ShortStringSchema,
+  title: NoteTitleSchema,
   content: LongStringSchema
 });
 
 export const UpdateNoteSchema = Type.Object({
-  title: Type.Optional(ShortStringSchema),
+  title: Type.Optional(NoteTitleSchema),
   content: Type.Optional(LongStringSchema)
 });
 

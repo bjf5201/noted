@@ -1,42 +1,50 @@
 import { Static, Type } from 'typebox';
 import {
   EmailSchema,
-  IdSchema,
-  RolesSchema,
-  ShortStringSchema
+  PasswordSchema,
+  UsernameSchema
 } from './shared/patterns.js';
 import { ApiFailureSchema, ApiSuccessSchema } from './shared/api.js';
+import { UserDataSchema } from './user.js';
 
-const AuthEntitySchema = Type.Object({
-  id: IdSchema,
+const RegisterRequestBody = Type.Object({
   email: EmailSchema,
-  username: Type.String({ minLength: 5 }),
-  roles: Type.Array(RolesSchema, {
-    description: "User's access level"
+  username: UsernameSchema,
+  password: PasswordSchema
+});
+
+export const RegisterSchema = Type.Object({
+  tags: ['Authentication'],
+  summary: 'Register a user',
+  description: 'Register a user account',
+  security: [],
+  body: RegisterRequestBody,
+  response: Type.Object({
+    201: ApiSuccessSchema(UserDataSchema),
+    400: ApiFailureSchema,
+    409: ApiFailureSchema,
+    500: ApiFailureSchema
   })
 });
 
-export const AuthEnvelopeSchema = Type.Object({
-  user: AuthEntitySchema
+const LoginRequestBody = Type.Object({
+  username: UsernameSchema,
+  password: PasswordSchema
 });
 
-const CredentialsSchema = Type.Object({
-  email: EmailSchema,
-  password: ShortStringSchema
-});
-
-const AuthResponseSchema = {
-  200: ApiSuccessSchema(AuthEnvelopeSchema),
-  401: ApiFailureSchema
-};
-
-export const AuthSchema = {
-  tags: ['auth'],
-  summary: 'User login/auth schema',
+export const LoginSchema = {
+  tags: ['Authentication'],
+  summary: 'User login/authentication schema',
   description: 'User login/authentication schema',
-  body: CredentialsSchema,
-  response: AuthResponseSchema
+  security: [],
+  body: LoginRequestBody,
+  response: Type.Object({
+    200: ApiSuccessSchema(UserDataSchema),
+    400: ApiFailureSchema,
+    401: ApiFailureSchema,
+    500: ApiFailureSchema
+  })
 };
 
-export type Credentials = Static<typeof CredentialsSchema>;
-export type AuthEntity = Static<typeof AuthEntitySchema>;
+export type LoginRequestBody = Static<typeof LoginRequestBody>;
+export type RegisterRequestBody = Static<typeof RegisterRequestBody>;

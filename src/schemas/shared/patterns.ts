@@ -8,7 +8,18 @@ const PHONE_REGEX =
 
 const ROLES = ['basic', 'moderator', 'admin'];
 
-export const RolesSchema = Type.Enum(ROLES);
+export const ShortStringSchema = Type.String({
+  minLength: 1,
+  maxLength: 255
+});
+
+export const LongStringSchema = Type.String({
+  minLength: 1
+});
+
+export const RolesSchema = Type.Array(Type.Enum(ROLES), {
+  description: "User's access level"
+});
 
 export const PasswordSchema = Type.String({
   pattern: PASSWORD_REGEX,
@@ -20,13 +31,9 @@ export const PhoneNumberSchema = Type.String({
   pattern: PHONE_REGEX
 });
 
-export const ShortStringSchema = Type.String({
-  minLength: 1,
-  maxLength: 255
-});
-
-export const LongStringSchema = Type.String({
-  minLength: 1
+export const UsernameSchema = Type.String({
+  minLength: 3,
+  maxLength: 20
 });
 
 export const EmailSchema = Type.String({
@@ -38,3 +45,7 @@ export const EmailSchema = Type.String({
 export const DateTimeSchema = Type.String({ format: 'date-time' });
 
 export const IdSchema = Type.Integer({ minimum: 1 });
+
+export const NoteTitleSchema = Type.String({
+  maxLength: 100
+});
