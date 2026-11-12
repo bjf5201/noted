@@ -2,11 +2,11 @@ import { fastifySession } from '@fastify/session';
 import { fastifyCookie } from '@fastify/cookie';
 import fp from 'fastify-plugin';
 import type { FastifyPluginAsync } from 'fastify';
-import type { AuthEntity } from '../../schemas/auth.js';
+import type { UserEntity } from 'noted/schemas/user.js';
 
 declare module 'fastify' {
   interface Session {
-    user: AuthEntity;
+    user: UserEntity;
   }
 }
 
