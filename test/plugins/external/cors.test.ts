@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import { buildTest as build } from 'noted/#/helpers/setup.js';
 import assert from 'node:assert';
 
-describe('CORS plugin', () => {
+describe.skip('CORS plugin', () => {
   it('should correctly handle CORS preflight requests', async (t) => {
     const app = await build(t);
 

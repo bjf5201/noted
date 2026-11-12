@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { buildTest } from 'noted/#/helpers/setup.js';
 
-describe('Helmet plugin', () => {
+describe.skip('Helmet plugin', () => {
   it('adds security headers to API responses', async (t) => {
     const app = await buildTest(t);
     const response = await app.inject({

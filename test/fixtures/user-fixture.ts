@@ -1,9 +1,9 @@
 import { TestContext } from 'node:test';
+import { buildEndpointTest } from 'noted/#/helpers/setup.endpoints.js';
 import {
-  buildTest,
   createUser as createTestUser,
   deleteUserByEmail
-} from 'noted/#/helpers/setup.js';
+} from 'noted/#/helpers/setup.users.js';
 
 interface UserPayload {
   email: string;
@@ -14,7 +14,7 @@ interface UserPayload {
 export async function buildUserTest(t: TestContext) {
   // Register one teardown hooks o cleanup runs before the app is closed.
   // Don't pass `t` to buildTest here: this fixture owns the app lifecycle.
-  const app = await buildTest();
+  const app = await buildEndpointTest();
   const createdEmails = new Set<string>();
 
   t.after(async () => {

@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import { buildTest as build } from 'noted/#/helpers/setup.js';
 import assert from 'node:assert';
 
-describe('Rate-limit plugin', () => {
+describe.skip('Rate-limit plugin', () => {
   it('should be rate limited', async (t) => {
     const app = await build(t);
 

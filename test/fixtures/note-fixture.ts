@@ -1,14 +1,13 @@
 import { TestContext } from 'node:test';
+import { buildEndpointTest } from 'noted/#/helpers/setup.endpoints.js';
 import {
-  buildTest,
   createNote as createNoteRecord,
-  createUser,
-  deleteNoteById,
-  deleteUserByEmail
-} from 'noted/#/helpers/setup.js';
+  deleteNoteById
+} from 'noted/#/helpers/setup.notes.js';
+import { createUser, deleteUserByEmail } from 'noted/#/helpers/setup.users.js';
 
 export async function buildNotesTest(t: TestContext) {
-  const app = await buildTest();
+  const app = await buildEndpointTest();
   const username = `notes-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const email = `${username}@example.com`;
   const createNoteIds = new Set<number>();

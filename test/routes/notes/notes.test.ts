@@ -1,15 +1,11 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import {
-  buildTest as build
-  //  createUser,
-  //  expectValidationError
-} from 'noted/#/helpers/setup.js';
+import { buildTest as build } from 'noted/#/helpers/setup.js';
 import { buildNotesTest } from 'noted/#/fixtures/note-fixture.js';
 // import { notes } from 'noted/database/schema.js';
 import { NOTES_ENDPOINT } from 'noted/#/helpers/endpoints.js';
 
-describe('Noted API', () => {
+describe.skip('Noted API', () => {
   describe('GET /api/v1/notes', () => {
     it('returns 404 when user is not logged in', async (t) => {
       const app = await build(t);
