@@ -5,8 +5,11 @@ import {
   IdSchema,
   RolesSchema,
   ShortStringSchema
-} from './shared/patterns.js';
-import { ApiFailureSchema, ApiSuccessSchema } from './shared/api.js';
+} from '../../shared/schemas/patterns.js';
+import {
+  ApiFailureSchema,
+  ApiSuccessSchema
+} from '../../shared/schemas/api.js';
 
 const UserEntitySchema = Type.Object({
   id: IdSchema,

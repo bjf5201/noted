@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import assert from 'node:assert';
 import type { TestContext } from 'node:test';
 import Fastify from 'fastify';
-import env, { autoConfig } from 'noted/plugins/external/env.js';
+import env, { autoConfig } from '../../src/plugins/env.js';
 
 interface EnvTestOptions {
   confKey?: string;

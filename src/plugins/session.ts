@@ -2,7 +2,7 @@ import { fastifySession } from '@fastify/session';
 import { fastifyCookie } from '@fastify/cookie';
 import fp from 'fastify-plugin';
 import type { FastifyPluginAsync } from 'fastify';
-import type { UserEntity } from 'noted/schemas/user.js';
+import type { UserEntity } from '../modules/users/users.schema.js';
 
 declare module 'fastify' {
   interface Session {

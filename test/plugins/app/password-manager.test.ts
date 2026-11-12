@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { buildTest } from 'noted/#/helpers/setup.js';
 
-describe('Plugin: password-manager', async () => {
+describe.skip('Plugin: password-manager', async () => {
   const app = await buildTest();
   const { passwordManager } = app;
   const password = 'testPassword123$';

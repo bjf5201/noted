@@ -4,7 +4,7 @@ import { sql } from 'drizzle-orm';
 import { seedUsers } from './seed-users.js';
 import { roles, users, usersRoles } from 'noted/database/schema.js';
 import { relations } from 'noted/database/relations.js';
-import { scryptHash } from 'noted/plugins/app/password-manager.js';
+import { scryptHash } from '../src/plugins/password-manager.js';
 
 if (Number(process.env.CAN_SEED_DATABASE) !== 1) {
   throw new Error(

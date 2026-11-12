@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { FastifyInstance, FastifyPluginOptions } from 'fastify';
 import fastifyAutoload, { type AutoloadPluginOptions } from '@fastify/autoload';
-import { errorHandler } from './lib/error-handler.js';
+import { errorHandler } from './shared/utils/error-handler.js';
 
 export type AppOptions = {
   skipOverride: boolean;

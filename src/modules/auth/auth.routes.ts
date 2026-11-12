@@ -1,6 +1,6 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
-import { LoginSchema } from 'noted/schemas/auth.js';
-import { ApiResponse } from 'noted/lib/api-response.js';
+import { LoginSchema } from './auth.schema.js';
+import { ApiResponse } from '../../shared/utils/api-response.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { usersRepository, passwordManager } = fastify;

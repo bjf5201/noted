@@ -4,7 +4,7 @@ import {
   IdSchema,
   LongStringSchema,
   NoteTitleSchema
-} from './shared/patterns.js';
+} from '../../shared/schemas/patterns.js';
 
 export const NoteEntitySchema = Type.Object({
   id: IdSchema,

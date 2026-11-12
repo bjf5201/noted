@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import { eq } from 'drizzle-orm';
 import { roles, users, usersRoles } from 'noted/database/schema.js';
-import { UserEntity } from 'noted/schemas/user.js';
+import { UserEntity } from './users.schema.js';
 
 type Database = FastifyInstance['db'];
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];

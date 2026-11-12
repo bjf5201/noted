@@ -3,9 +3,12 @@ import {
   EmailSchema,
   PasswordSchema,
   UsernameSchema
-} from './shared/patterns.js';
-import { ApiFailureSchema, ApiSuccessSchema } from './shared/api.js';
-import { UserDataSchema } from './user.js';
+} from '../../shared/schemas/patterns.js';
+import {
+  ApiFailureSchema,
+  ApiSuccessSchema
+} from '../../shared/schemas/api.js';
+import { UserDataSchema } from '../users/users.schema.js';
 
 const RegisterRequestBody = Type.Object({
   email: EmailSchema,
