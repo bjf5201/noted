@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 import fp from 'fastify-plugin';
 import { eq } from 'drizzle-orm';
 import { roles, users, usersRoles } from 'noted/database/schema.js';
-import { AuthEntity } from '../../../schemas/auth.js';
+import { UserEntity } from 'noted/schemas/user.js';
 
 type Database = FastifyInstance['db'];
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0];
@@ -18,6 +18,19 @@ export function createUsersRepository(fastify: FastifyInstance) {
   const db = fastify.db;
 
   return {
+    async findByUsername(username: string, executor: DatabaseExecutor = db) {
+      const [user] = await executor
+        .select({
+          id: users.id,
+          username: users.username,
+          password: users.passwordHash
+        })
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
+
+      return user as (UserEntity & { password: string }) | undefined;
+    },
     async findByEmail(email: string, executor: DatabaseExecutor = db) {
       const [user] = await executor
         .select({
@@ -30,21 +43,16 @@ export function createUsersRepository(fastify: FastifyInstance) {
         .where(eq(users.email, email))
         .limit(1);
 
-      return user as (AuthEntity & { password: string }) | undefined;
+      return user as (UserEntity & { password: string }) | undefined;
     },
 
-    async create(
-      user: {
-        username: string;
-        email: string;
-        passwordHash: string;
-      },
-      executor: DatabaseExecutor = db
-    ) {
-      const [createdUser] = await executor
-        .insert(users)
-        .values(user)
-        .returning({
+    async create(user: {
+      username: string;
+      email: string;
+      passwordHash: string;
+    }) {
+      return db.transaction(async (tx) => {
+        const [createdUser] = await tx.insert(users).values(user).returning({
           id: users.id,
           username: users.username,
           email: users.email,
@@ -52,11 +60,41 @@ export function createUsersRepository(fastify: FastifyInstance) {
           updatedAt: users.updatedAt
         });
 
-      return {
-        ...createdUser,
-        createdAt: createdUser.createdAt.toISOString(),
-        updatedAt: createdUser.updatedAt.toISOString()
-      };
+        if (!createdUser) {
+          throw new Error('Failed to create user.');
+        }
+
+        // Create the shared default role if it doesn't already exist
+        await tx.insert(roles).values({ name: 'basic' }).onConflictDoNothing();
+
+        const [basicRole] = await tx
+          .select({ id: roles.id })
+          .from(roles)
+          .where(eq(roles.name, 'basic'))
+          .limit(1);
+
+        if (!basicRole) {
+          throw new Error('Failed to find the basic role.');
+        }
+
+        await tx.insert(usersRoles).values({
+          userId: createdUser.id,
+          roleId: basicRole.id
+        });
+
+        const assignedRoles = await tx
+          .select({ name: roles.name })
+          .from(roles)
+          .innerJoin(usersRoles, eq(usersRoles.roleId, roles.id))
+          .where(eq(usersRoles.userId, createdUser.id));
+
+        return {
+          ...createdUser,
+          roles: assignedRoles.map(({ name }) => name),
+          createdAt: createdUser.createdAt.toISOString(),
+          updatedAt: createdUser.updatedAt.toISOString()
+        };
+      });
     },
 
     async updatePassword(
