@@ -1,20 +1,19 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
-import { AuthSchema } from 'noted/schemas/auth.js';
+import { LoginSchema } from 'noted/schemas/auth.js';
 import { ApiResponse } from 'noted/lib/api-response.js';
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { usersRepository, passwordManager } = fastify;
-
   fastify.post(
-    '/login',
+    '/auth/session',
     {
-      schema: AuthSchema
+      schema: LoginSchema
     },
     async function (request, reply) {
-      const { email, password } = request.body;
+      const { username, password } = request.body;
 
       const response = await fastify.db.transaction(async (trx) => {
-        const user = await usersRepository.findByEmail(email, trx);
+        const user = await usersRepository.findByUsername(username, trx);
 
         if (!user) {
           return ApiResponse.unauthorized(
@@ -35,7 +34,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           );
         }
 
-        const roles = await usersRepository.findUserRolesByEmail(email, trx);
+        const roles = await usersRepository.findUserRolesByEmail(
+          user.email,
+          trx
+        );
 
         const userRoles = roles.map((role) => role.name);
 
@@ -43,7 +45,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           id: user.id,
           email: user.email,
           username: user.username,
-          roles: userRoles
+          roles: userRoles,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
         };
 
         await request.session.save();
@@ -54,7 +58,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
               id: user.id,
               email: user.email,
               username: user.username,
-              roles: userRoles
+              roles: userRoles,
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt
             }
           },
           request.id
